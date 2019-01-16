@@ -30,7 +30,7 @@ The completed exercise is due on Thursday, 17 January, 2018 before class begins.
 ### Question
 Why are reproducible practices becoming the norm in data analytics?
 
-> Answer: Sarah Ko test
+> Answer: Sarah Ko test 2
 
 ### Question
 What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
