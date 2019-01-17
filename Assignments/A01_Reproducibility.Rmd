@@ -1,7 +1,7 @@
 ---
-title: "Assignment 1: Reproducibility, Workflow, Version Control"
+title: 'Assignment 1: Reproducibility, Workflow, Version Control'
 author: "Sarah Ko"
-output: pdf_document
+output:  pdf_document
 geometry: margin=2.54cm
 ---
 
@@ -30,22 +30,22 @@ The completed exercise is due on Thursday, 17 January, 2018 before class begins.
 ### Question
 Why are reproducible practices becoming the norm in data analytics?
 
-> Answer: Sarah Ko test 2
+> Answer: Reproducible practices are important because they increase transparency. When you share results, if your data analysis is reproducible, your findings will have more credibility. In addition, if your methods can be followed, others can use the same methods on their own data sets. 
 
 ### Question
 What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: Testing testing
+> Answer: I have typically only analyzed data using excel. My first and only experience using R was in John Poulsen's statistics class. I have never used Git.
 
 ### Question
 Are there any components of the course about which you feel confident?
 
-> Answer: Another test
+> Answer: I feel confident in the basics of R and with simple statistical tests. 
 
 ### Question
 Are there any components of the course about which you feel apprehensive?
 
-> Answer: Yes
+> Answer: I feel apprehensive about interfacing with git because it is completely new to me! Even though I feel comfortable with the basics of R, I felt like I was much slower at understanding new concepts and tools compared to my peers. 
 
 
 ## 2) GitHub
@@ -53,6 +53,5 @@ Are there any components of the course about which you feel apprehensive?
 ### Your Repository
 Provide a link below to your course repository in GitHub. Make sure you have pulled all recent changes from the course repository (https://github.com/KateriSalk/Environmental_Data_Analytics) and that you have updated your course README file. 
 
-> Answer: Ok
-
+> Answer: https://github.com/sarahko7/Environmental_Data_Analytics
 
