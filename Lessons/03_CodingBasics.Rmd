@@ -116,9 +116,9 @@ R functions are the major tool used in R. Functions can do virtually unlimited t
 
 ```{r}
 seq(1, 10)
-ten_sequence <- seq(1, 10)
+ten_sequence <- seq(1, 10) #;ten_sequence . displays bc its run in the same line i.e. interpreted as the same line of code
 ten_sequence
-(ten_sequence <- seq(1, 10))
+(ten_sequence <- seq(1, 10)) #adding () displays the result immediately
 
 seq(1, 10, 2) # from, to, by
 ```
