@@ -1,6 +1,6 @@
 ---
 title: "Assignment 2: Coding Basics"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -37,6 +37,16 @@ The completed exercise is due on Thursday, 24 January, 2019 before class begins.
 
 ```{r}
 
+#1. create sequence
+seq_1to100 <- seq(1, 100, 4); seq_1to100
+
+#2. calculate  mean & median
+seq_mean <- mean(seq_1to100); seq_mean
+seq_median <- median(seq_1to100); seq_median
+
+#3. check is mean is greater than the median
+check_mean_greater_median <- seq_mean > seq_median; check_mean_greater_median
+
 ```
 
 ## Basics Day 2
@@ -51,11 +61,22 @@ The completed exercise is due on Thursday, 24 January, 2019 before class begins.
 
 ```{r}
 
+#5. create vectors
+student_names <- c("Amy", "Jake", "Charles", "Rosa"); student_names # character vector
+test_scores <- c(98, 46, 55, 92); test_scores # numeric vector
+passed_test <- c(TRUE, FALSE, TRUE, TRUE); passed_test # logical vector
+
+#7. combine vectors into data frame
+student_test_results <- data.frame(student_names, test_scores, passed_test); student_test_results
+
+#8. relabel column names
+names(student_test_results) <- c("Student", "Score out of 100", "Passed?"); student_test_results
+
 ```
 
 9. QUESTION: How is this data frame different from a matrix?
 
-> ANSWER: 
+> ANSWER: Data frames and matrices are both 2 dimensional structures, but data frames can contain columns with different modes. Matrices can contain only elements of the same type.
 
 10. Create a function with an if/else statement. Your function should determine whether a test score is a passing grade of 50 or above (TRUE or FALSE). You will need to choose either the `if` and `else` statements or the `ifelse` statement. The name of your function should be informative.
 
@@ -63,8 +84,26 @@ The completed exercise is due on Thursday, 24 January, 2019 before class begins.
 
 ```{r}
 
+#10. create function to determine if test score is a passing grade of > or =50
+did_student_pass <- function(x){
+  student_pass_results <- ifelse(test_scores >=50, "True", "False")
+}
+
+#11. use function on vector of test scores
+test_results_w_function <- did_student_pass(test_scores); test_results_w_function
+
 ```
 
 12. QUESTION: Which option of `if` and `else` vs. `ifelse` worked? Why?
 
-> ANSWER: 
+> ANSWER: When creating a custom function, the 'ifelse' option worked. R could not create a function with the 'if' and 'else' functions separated. A possible reason is because the curly brackets of the 'if' and 'else' statements conflict with the curly brackets that are also a part of the custom function's syntax.
+
+```{r}
+
+#try creating function with 'if' and 'else' instead of 'ifelse'
+#R cannot create the function, although notably it does not cause an error message or prevent knitting.
+did_student_pass_if_and_else <- function(x){
+  student_pass_results_if_and_else <- 
+    if(test_scores >= 50) {"True dude"} 
+  else {"False bro"}
+}
