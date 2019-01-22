@@ -1,6 +1,6 @@
 ---
 title: "4: Coding Basics"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -36,58 +36,60 @@ vector2
 vector3 <- c(TRUE,TRUE,TRUE,FALSE,TRUE,FALSE) #logical vector
 vector3
 
-vector1[3] # 
+vector1[3] # called 'matrix subsetting'. pick vector 1, choose third item
 
 # Matrices ----
-matrix1 <- matrix(1:20, nrow = 5,ncol = 4) # 
+matrix1 <- matrix(1:20, nrow = 5,ncol = 4) # creates this vertically, then horizontally
 matrix1
-matrix2 <- matrix(1:20, nrow = 5, ncol = 4, byrow = TRUE) #
+matrix2 <- matrix(1:20, nrow = 5, ncol = 4, byrow = TRUE) # creates horizontally, then vertically
 matrix2
 matrix3 <- matrix(1:20, nrow = 5, ncol = 4, byrow = TRUE, # return after comma continues the line
                   dimnames = list(c("uno", "dos", "tres", "cuatro", "cinco"), 
                                   c("un", "deux", "trois", "cat"))) #
-matrix3
+matrix3 # this names the rows, then the columns
 
-matrix1[4, ] #
-matrix1[ , 3] #
-matrix1[c(12, 14)] #
-matrix1[c(12:14)] #
-matrix1[2:4, 1:3] #
+matrix1[4, ] # grab row 4
+matrix1[ , 3] # grab column 3
+matrix1[c(12, 14)] # grab elements 12 and 14
+matrix1[c(12:14)] # grab elements 12 to 13
+matrix1[2:4, 1:3] # grab rows 2 to 4, and columns 1-3
 
 cells <- c(1, 26, 24, 68)
 rnames <- c("R1", "R2")
 cnames <- c("C1", "C2") 
 matrix4 <- matrix(cells, nrow = 2, ncol = 2, byrow = TRUE,
-  dimnames = list(rnames, cnames)) # 
+  dimnames = list(rnames, cnames)) # if you only specify rows and not columns, R assumes the number of rows
 matrix4
 
 # Lists ---- 
 list1 <- list(name = "Maria", mynumbers = vector1, mymatrix = matrix1, age = 5.3); list1
-list1[[2]]
+list1[[2]] #use double square brackets for lists
 
 # Data Frames ----
-d <- c(1, 2, 3, 4) # What type of vector?
-e <- c("red", "white", "red", NA) # What type of vector?
-f <- c(TRUE, TRUE, TRUE, FALSE) # What type of vector?
-dataframe1 <- data.frame(d,e,f) #
-names(dataframe1) <- c("ID","Color","Passed"); View(dataframe1) # 
+d <- c(1, 2, 3, 4) # What type of vector? numeric
+e <- c("red", "white", "red", NA) # What type of vector? char
+f <- c(TRUE, TRUE, TRUE, FALSE) # What type of vector? logical
+dataframe1 <- data.frame(d,e,f) #combine vectors
+names(dataframe1) <- c("ID","Color","Passed"); View(dataframe1) # rename column names
 
-dataframe1[1:2] # 
-dataframe1[c("ID","Passed")] # 
-dataframe1$Color # 
+dataframe1[1:2] # pulls columns 1&2. if you did matrix1[1:2] it would pull elements 1&2
+dataframe1[,1:2] # same as the above line
+dataframe1[1:2,] # pulls the rows
+dataframe1[c("ID","Passed")] # pull columns by name
+dataframe1$Color # pulls all elements in the defined column
 
 ```
 QUESTION: How do the different types of data appear in the Environment tab?
 
-> ANSWER: 
+> ANSWER: in sections
 
 QUESTION: In the R chunk below, write "dataframe1$". Press `tab` after you type the dollar sign. What happens?
 
-> ANSWER: 
+> ANSWER: displays column names to use
 
 QUESTION: What happens when a comment in R is followed by "----"?
 
-> ANSWER:
+> ANSWER: makes it intos a section
 
 Advanced: Sequential section headers can be created by using at least four -, =, and # characters.
 
@@ -127,6 +129,8 @@ If a package is already installed, you will need to load it every session. You c
 
 library(dplyr)
 library(ggplot2)
+
+#when items are masked, you can reinstall the packages, must do it in the correct order
 
 # Some packages are umbrellas under which other packages are loaded
 #install.packages(tidyverse)
