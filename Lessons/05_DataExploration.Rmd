@@ -1,6 +1,6 @@
 ---
 title: "5: Data Exploration"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko - Class Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -33,6 +33,8 @@ What is the output that results?
 
 If your working directory is not set to the folder you want, you have several options. The first is to directly code your working directory. You may do this by defining an absolute file path (below). What are the pitfalls of using an absolute file path?
 
+In a collaborative setting, might want to note what the working directory should be set as
+
 ```{r}
 # Absolute file path is commented out
 #setwd("/Users/katerisalk/Documents/Duke/Courses/Environmental_Data_Analytics")
@@ -51,6 +53,11 @@ At the same time, you should also load your theme if you are doing any data visu
 ```{r}
 # Load package
 library(tidyverse)
+
+#the advantage is that 'library' tells you any errors, 'require' does not
+
+#best practice to load all packages right at the top
+
 ```
 
 ### Import your datasets
@@ -69,12 +76,14 @@ Note: In the Knit menu in the Editor, you will need to specify whether your knit
 
 # Relative file path (friendly for users regardless of machine)
 USGS.flow.data <- read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
+#sko: this goes down a level from the working direction, then down to data, raw, and file
 
 # What happens if we don't assign a name to our imported dataset?
 #read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 
 # Another option is to choose with your browser
 # read.csv(file.choose())
+#sko notes: this is not reproducible
 
 # To import .txt files, use read.table rather than read.csv
 #read.table()
@@ -101,6 +110,8 @@ colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime",
                               "gage.height.max", "gage.height.max.approval", 
                               "gage.height.min", "gage.height.min.approval", 
                               "gage.height.mean", "gage.height.mean.approval")
+#tibbles give R an advantage over python
+#tibbles are faster than dataframes
 str(USGS.flow.data)
 dim(USGS.flow.data)
 length(USGS.flow.data)
@@ -109,10 +120,13 @@ head(USGS.flow.data)
 head(USGS.flow.data, 10)
 tail(USGS.flow.data, 5)
 USGS.flow.data[30000:30005, c(3, 8, 14)]
+#give rows 30000 to 30005, columns 3, 8, 14
 
 class(USGS.flow.data$datetime)
 class(USGS.flow.data$discharge.mean)
 class(USGS.flow.data$gage.height.mean)
+
+#pay attention to the class - it will import and sort data differently this way
 
 summary(USGS.flow.data)
 summary(USGS.flow.data$discharge.mean)
@@ -121,7 +135,7 @@ summary(USGS.flow.data$gage.height.mean)
 ```
 
 What happened to blank cells in the spreadsheet when they were imported into R?
-> ANSWER: 
+> ANSWER: some are NA and some are blank. depends on the class
 
 ## TIPS AND TRICKS: SPREADSHEETS
 
