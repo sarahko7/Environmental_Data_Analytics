@@ -1,6 +1,6 @@
 ---
 title: "5: Data Exploration"
-author: "Environmental Data Analytics | Sarah Ko - Class Notes"
+author: "Environmental Data Analytics | Sarah Ko - Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
