@@ -96,14 +96,4 @@ test_results_w_function <- did_student_pass(test_scores); test_results_w_functio
 
 12. QUESTION: Which option of `if` and `else` vs. `ifelse` worked? Why?
 
-> ANSWER: When creating a custom function, the 'ifelse' option worked. R could not create a function with the 'if' and 'else' functions separated. A possible reason is because the curly brackets of the 'if' and 'else' statements conflict with the curly brackets that are also a part of the custom function's syntax.
-
-```{r}
-
-#try creating function with 'if' and 'else' instead of 'ifelse'
-#R cannot create the function, although notably it does not cause an error message or prevent knitting.
-did_student_pass_if_and_else <- function(x){
-  student_pass_results_if_and_else <- 
-    if(test_scores >= 50) {"True dude"} 
-  else {"False bro"}
-}
+> ANSWER: When creating a custom function, the 'ifelse' option worked. This is because the functions 'if' and 'else' work on single elements. To use this logic with a vector, the ifelse function should be used instead.
