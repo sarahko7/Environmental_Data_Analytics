@@ -1,6 +1,6 @@
 ---
 title: "6: Data Exploration"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko - notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -8,7 +8,6 @@ fig_width: 5
 fig_height: 2.5
 editor_options: 
   chunk_output_type: console
-
 ---
 
 ## LESSON OBJECTIVES
@@ -60,6 +59,8 @@ class(USGS.flow.data$datetime)
 
 R will often import dates as factors or characters rather than dates. To fix, this we need to tell R that it is looking at dates. We also need to specify the format the dates are in. By default, if you don't provide a format, R will attempt to use %Y-%m-%d or %Y/%m/%d as a default. Note: if you are working collaboratively in an international setting, using a year-month-day format in spreadsheets is the least ambiguous of date formats. Make sure to check whether month-day-year or day-month-year is used in an ambiguously formatted spreadsheet.
 
+sko note: the best format is y/m/d
+
 Formatting of dates in R: 
 
 %d  day as number (0-31)
@@ -82,11 +83,15 @@ help(as.Date)
 # (code must be uncommented)
 today <- Sys.Date()
 format(today, format = "%B")
-#format(today, format = "")
-#format(today, format = "")
-#format(today, format = "")
+format(today, format = "%Y/%m/%d")
+format(today-1, format = "%y/%b/%d/testminus1")
+#the minus 1 only works with date objects
+format(today, format = "%Y,%B,%d,%A")
 
 USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%m/%d/%y") 
+
+class(USGS.flow.data$datetime)
+
 ```
 
 Note that for every date prior to 1969, R has assigned the date in the 2000s rather than the 1900s. This can be fixed with an `ifelse` statement inside a function. Run through the code below and write what is happening in the comment above each line.
