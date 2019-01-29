@@ -1,6 +1,6 @@
 ---
 title: "Assignment 3: Data Exploration"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -30,6 +30,16 @@ The completed exercise is due on Thursday, 31 January, 2019 before class begins.
 Check your working directory, load necessary packages (tidyverse), and upload the North Temperate Lakes long term monitoring dataset for the light, temperature, and oxygen data for three lakes (file name: NTL-LTER_Lake_ChemistryPhysics_Raw.csv). Type your code into the R chunk below.
 ```{r}
 
+# check the working directory
+getwd()
+
+# Load necessary package 'tidyverse'
+library(tidyverse)
+
+# set wd to the filepath of Environmental_Data_Analytics/Assignments to use relative filepath
+# upload the North Temperate Lakes long term monitoring dataset using relative filepath
+NTL.data <- read.csv("../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+
 ```
 
 ## 2) Learn about your system
@@ -37,6 +47,9 @@ Check your working directory, load necessary packages (tidyverse), and upload th
 Read about your dataset in the NTL-LTER README file. What are three salient pieces of information you gained from reading this file?
 
 > ANSWER: 
+1. The data contains information on Physical and Chemical Limnology, from the timespan of 1984 - 2016
+2. This data was collected from 1 central station near the deepest point of each lake
+3. When chemical measurements were made in vertical profiles, depths for sampling usually correspond to the surface plus depths of 50%, 25%, 10%, 5% and 1% of the surface irradiance
 
 ## 3) Obtain basic summaries of your data
 
@@ -50,14 +63,24 @@ Write R commands to display the following information:
 
 ```{r}
 # 1
+dim(NTL.data)
 
 # 2
+class(NTL.data)
 
 # 3
+head(NTL.data, 8)
 
 # 4
+class(NTL.data$lakename)
+class(NTL.data$sampledate)
+class(NTL.data$depth)
+class(NTL.data$temperature_C)
 
 # 5
+summary(NTL.data$lakename)
+summary(NTL.data$depth)
+summary(NTL.data$temperature_C)
 
 ```
 
@@ -65,12 +88,30 @@ Change sampledate to class = date. After doing this, write an R command to displ
 
 ```{r}
 
+# change class of sampledate from factor to date
+
+# convert factor into POSIXt. define original format of data
+NTL.data$sampledate <- strptime(NTL.data$sampledate, format = "%m/%d/%y") 
+#SKO: why is this needed?
+
+# change POSIXt to date, modify display to year/month/day
+NTL.data$sampledate <- as.Date(NTL.data$sampledate, format = "%y/%m/%d")
+#SKO: not able to adjust formatting to /, it is current -
+
+# confirm that the class is date
+class(NTL.data$sampledate)
+
+#display the first 10 rows of the date column
+head(NTL.data, 10)
+
 ```
 
 Question: Do you want to remove NAs from this dataset? Why or why not?
 
-> ANSWER: 
+> ANSWER: Removing or keeping NAs depends on the research question. If I suspected that the data is unavailable due to another variable, it would be good to keep NAs in the dataset - deleting them may create bias. If I suspected that this data was unavailable at random and I had adequate amounts of data to create my model, I may be inclined to delete the NAs. Another reason to delete the NAs is if the data was unavailable for a predictable reason (e.g. incomplete years like the beginning and ending years of a dataset may have missing data). 
+sko: answer the question!
 
+SKO: is removing the NAs up to us?
 
 ## 4) Explore your data graphically
 
@@ -84,7 +125,7 @@ Write R commands to display graphs depicting:
 6. Boxplot of temperature based on depth, with depth divided into 0.25 m increments
 7. Scatterplot of temperature by depth
 
-```{r}
+```{r, fig.height = 3, fig.width = 4}
 # 1
 
 # 2

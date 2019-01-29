@@ -97,10 +97,12 @@ class(USGS.flow.data$datetime)
 Note that for every date prior to 1969, R has assigned the date in the 2000s rather than the 1900s. This can be fixed with an `ifelse` statement inside a function. Run through the code below and write what is happening in the comment above each line.
 
 ```{r}
-# 
+# format the dates as 6 character string: year/month/date
 USGS.flow.data$datetime <- format(USGS.flow.data$datetime, "%y%m%d")
 
-#
+# create a function. 
+# paste0 amends the components together
+# checks if the date is after Dec 21, 2018 (the last possible day in the dataset). if its over, the date is actually in the 1900s, so start the string as 19, else set the string as 20. 
 create.early.dates <- (function(d) {
        paste0(ifelse(d > 181231,"19","20"),d)
        })
@@ -119,13 +121,18 @@ Notice in our dataset that our discharge and gage height observations have many 
 ```{r}
 summary(USGS.flow.data$discharge.mean)
 summary(USGS.flow.data$gage.height.mean)
+# shows the number of NAs
 ```
 Question: What types of research questions might make it favorable to remove NAs from a dataset, and what types of research questions might make it favorable to retain NAs in the dataset?
 
 > Answer: 
+remove NAs: quantitative analysis. certain statistical models can't contain NAs
+keep NAs: indicates if people wanted to answer the question (social science survey). true NAs is different from missing data. if you get under a threshold, the system might report it as NA.
 
 ```{r}
-USGS.flow.data.complete <- na.omit(USGS.flow.data)
+USGS.flow.data.complete <- na.omit(USGS.flow.data) # removes the entire now
+# if you don't want to remove based on the entire row, can try to $
+# complete.cases can be helpful to query which rows are entirely full
 dim(USGS.flow.data)
 dim(USGS.flow.data.complete)
 
@@ -148,6 +155,7 @@ Visualize count data for categorical variables.
 ```{r, fig.height = 3, fig.width = 4}
 ggplot(USGS.flow.data.complete, aes(x = discharge.mean.approval)) +
   geom_bar()
+# a is approved, p is pending approval
 ```
 
 ### Histogram (function: geom_histogram)
@@ -155,19 +163,19 @@ ggplot(USGS.flow.data.complete, aes(x = discharge.mean.approval)) +
 Visualize distributions of values for continuous numerical variables. What is happening in each line of code? Insert a comment above each line.
 
 ```{r, fig.height = 3, fig.width = 4}
-#
+# shows a warning bc you don't have a great bin width
 ggplot(USGS.flow.data.complete) +
   geom_histogram(aes(x = discharge.mean))
 
-#
+# took a discharge mean of every 10 units
 ggplot(USGS.flow.data.complete) +
   geom_histogram(aes(x = discharge.mean), binwidth = 10)
 
-#
+# change the number of bins
 ggplot(USGS.flow.data.complete) +
   geom_histogram(aes(x = discharge.mean), bins = 20)
 
-#
+# zoomed in on everything under mean of 500
 ggplot(USGS.flow.data.complete, aes(x = discharge.mean)) +
   geom_histogram(binwidth = 10) + 
   scale_x_continuous(limits = c(0, 500))
@@ -182,14 +190,15 @@ ggplot(USGS.flow.data.complete) +
 An alternate to a histogram is a frequency polygon graph (distributions of values for continuous numerical variables). Instead of displaying bars,  counts of continuous variables are displayed as lines. This is advantageous if you want to display multiple variables or categories of variables at once.
 
 ```{r, fig.height = 3, fig.width = 4}
-#
+# plot freqpoly on same scales 
+# take measurements from 3 different columns
 ggplot(USGS.flow.data.complete) +
   geom_freqpoly(aes(x = gage.height.mean), bins = 50) +
   geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "blue") +
   geom_freqpoly(aes(x = gage.height.max), bins = 50, color = "red") +
   scale_x_continuous(limits = c(0, 10))
 
-#
+# take measurements from the same column, and divide them up by a categorical variable
 ggplot(USGS.flow.data.complete) +
   geom_freqpoly(aes(x = gage.height.mean, color = gage.height.mean.approval), bins = 50) +
   scale_x_continuous(limits = c(0, 10)) +
@@ -215,11 +224,11 @@ An alternate option is a violin plot, which displays density distributions, some
 ggplot(USGS.flow.data.complete) +
   geom_boxplot(aes(x = gage.height.mean.approval, y = gage.height.mean))
 
-#
+# divide your data by the height of your river (i.e. gage height). the greater the depth of your river, the more water will flow through
 ggplot(USGS.flow.data.complete) +
   geom_boxplot(aes(x = gage.height.mean, y = discharge.mean, group = cut_width(gage.height.mean, 1)))
 
-#
+# the larger the amt of samples, the wider the violin
 ggplot(USGS.flow.data.complete) +
   geom_violin(aes(x = gage.height.mean.approval, y = gage.height.mean), draw_quantiles = c(0.25, 0.5, 0.75))
 ```
