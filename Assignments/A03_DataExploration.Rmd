@@ -88,30 +88,22 @@ Change sampledate to class = date. After doing this, write an R command to displ
 
 ```{r}
 
-# change class of sampledate from factor to date
-
-# convert factor into POSIXt. define original format of data
-NTL.data$sampledate <- strptime(NTL.data$sampledate, format = "%m/%d/%y") 
-#SKO: why is this needed?
-
-# change POSIXt to date, modify display to year/month/day
-NTL.data$sampledate <- as.Date(NTL.data$sampledate, format = "%y/%m/%d")
-#SKO: not able to adjust formatting to /, it is current -
+# change class of sampledate from factor to date. must define original format of data
+NTL.data$sampledate <- as.Date(NTL.data$sampledate, format = "%m/%d/%y")
 
 # confirm that the class is date
 class(NTL.data$sampledate)
 
 #display the first 10 rows of the date column
-head(NTL.data, 10)
+head(NTL.data$sampledate, 10)
 
 ```
 
 Question: Do you want to remove NAs from this dataset? Why or why not?
 
 > ANSWER: Removing or keeping NAs depends on the research question. If I suspected that the data is unavailable due to another variable, it would be good to keep NAs in the dataset - deleting them may create bias. If I suspected that this data was unavailable at random and I had adequate amounts of data to create my model, I may be inclined to delete the NAs. Another reason to delete the NAs is if the data was unavailable for a predictable reason (e.g. incomplete years like the beginning and ending years of a dataset may have missing data). 
-sko: answer the question!
 
-SKO: is removing the NAs up to us?
+> for this particular dataset, I would want to remove the NAs in order to perform statistical analyses.
 
 ## 4) Explore your data graphically
 
@@ -125,32 +117,80 @@ Write R commands to display graphs depicting:
 6. Boxplot of temperature based on depth, with depth divided into 0.25 m increments
 7. Scatterplot of temperature by depth
 
-```{r, fig.height = 3, fig.width = 4}
+```{r}
+
+# create dataframe with only lakename and temperature data
+NTL.lakename.temp <- NTL.data[,c("lakename", "temperature_C")]
+
 # 1
 
+# remove NAs
+NTL.lakename.temp.complete <- na.omit(NTL.lakename.temp)
+
+# barplot counts the occurance of each lake, which each has a corresponding temperature record
+Q1.barplot <- ggplot(data = NTL.lakename.temp.complete, aes(x = lakename)) +
+    geom_bar()
+  print(Q1.barplot)
+#SKO: is there an easier way? https://stackoverflow.com/questions/24895575/ggplot2-bar-plot-with-two-categorical-variables
+    
 # 2
+  
+# histogram of temp
+ggplot(NTL.lakename.temp.complete) +
+  geom_histogram(aes(x = temperature_C))
 
 # 3
 
+# create histogram with 50 bins
+ggplot(NTL.lakename.temp.complete) +
+  geom_histogram(aes(x = temperature_C), bins=50)
+
 # 4
+
+# frequency polygon of temp
+ggplot(NTL.lakename.temp.complete) +
+  geom_freqpoly(aes(x = temperature_C, color = lakename), bins = 50) +
+  scale_x_continuous(limits = c(0, 30)) +
+  theme(legend.position = "right")
 
 # 5
 
+# boxplot of temp per lake
+ggplot(NTL.lakename.temp.complete) +
+  geom_boxplot(aes(x = lakename, y = temperature_C, group = cut_width(lakename, 1)))
+
 # 6
 
+# create dataframe with only lakename, temp, and depth
+NTL.lakename.temp.depth <- NTL.data[,c("lakename", "temperature_C", "depth")]
+
+# remove NAs
+NTL.lakename.temp.depth.complete <- na.omit(NTL.lakename.temp.depth)
+
+# boxplot of temp based on depth, depth divided into 0.25m increments
+ggplot(NTL.lakename.temp.depth.complete) +
+  geom_boxplot(aes(x = depth, y = temperature_C, group = cut_width(depth, 0.25)))
+#SKO: how to tell the units of this dataset? couldn't find in readme or website
+
 # 7 
+
+# scatterplot temp based on depth
+ggplot(NTL.lakename.temp.depth.complete) +
+  geom_point(aes(x = depth, y = temperature_C))
 
 ```
 ## 5) Form questions for further data analysis
 
 What did you find out about your data from the basic summaries and graphs you made? Describe in 4-6 sentences.
 
-> ANSWER: 
+> ANSWER: The bar plot of temperature readings showed that Paul Lake and Peter Lake have by far the most temperature measurements, followed by Tuesday Lake, West Long Lake, and East Long Lake. Temperature measurements compiled from all the lakes show a range of 3-28 C. Most of the temperature measurements are around 5 C, with a small cluster of measurements around 23 C. At shallower depths (~0-7m), the temperature measurements have a much larger distribution as compared to those deeper. Even so, the temperature appears to decrease with increasing depth below the surface.
 
-What are 3 further questions you might ask as you move forward with  analysis of this dataset?
+> SKO: need to confirm that depths are in meters
 
-> ANSWER 1: 
+What are 3 further questions you might ask as you move forward with analysis of this dataset?
 
-> ANSWER 2: 
+> ANSWER 1: What is the mathematical correlation between temperature and depth?
 
-> ANSWER 3: 
+> ANSWER 2: Are the temperature means of the lakes significantly different from one another?
+
+> ANSWER 3: Is there a correlation between temperature and number of temperature measurements recorded?
