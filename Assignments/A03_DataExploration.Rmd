@@ -47,9 +47,12 @@ NTL.data <- read.csv("../Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 Read about your dataset in the NTL-LTER README file. What are three salient pieces of information you gained from reading this file?
 
 > ANSWER: 
-1. The data contains information on Physical and Chemical Limnology, from the timespan of 1984 - 2016
-2. This data was collected from 1 central station near the deepest point of each lake
-3. When chemical measurements were made in vertical profiles, depths for sampling usually correspond to the surface plus depths of 50%, 25%, 10%, 5% and 1% of the surface irradiance
+
+>1. The data contains information on Physical and Chemical Limnology, from the timespan of 1984 - 2016
+
+>2. This data was collected from 1 central station near the deepest point of each lake
+
+>3. When chemical measurements were made in vertical profiles, depths for sampling usually correspond to the surface plus depths of 50%, 25%, 10%, 5% and 1% of the surface irradiance
 
 ## 3) Obtain basic summaries of your data
 
@@ -103,7 +106,7 @@ Question: Do you want to remove NAs from this dataset? Why or why not?
 
 > ANSWER: Removing or keeping NAs depends on the research question. If I suspected that the data is unavailable due to another variable, it would be good to keep NAs in the dataset - deleting them may create bias. If I suspected that this data was unavailable at random and I had adequate amounts of data to create my model, I may be inclined to delete the NAs. Another reason to delete the NAs is if the data was unavailable for a predictable reason (e.g. incomplete years like the beginning and ending years of a dataset may have missing data). 
 
-> for this particular dataset, I would want to remove the NAs in order to perform statistical analyses.
+> For this particular dataset, I would want to remove the NAs in order to perform statistical analyses.
 
 ## 4) Explore your data graphically
 
@@ -119,64 +122,82 @@ Write R commands to display graphs depicting:
 
 ```{r}
 
+# 1
+
 # create dataframe with only lakename and temperature data
 NTL.lakename.temp <- NTL.data[,c("lakename", "temperature_C")]
-
-# 1
 
 # remove NAs
 NTL.lakename.temp.complete <- na.omit(NTL.lakename.temp)
 
 # barplot counts the occurance of each lake, which each has a corresponding temperature record
-Q1.barplot <- ggplot(data = NTL.lakename.temp.complete, aes(x = lakename)) +
-    geom_bar()
-  print(Q1.barplot)
-#SKO: is there an easier way? https://stackoverflow.com/questions/24895575/ggplot2-bar-plot-with-two-categorical-variables
-    
+ggplot(data = NTL.lakename.temp.complete, aes(x = lakename)) + geom_bar() + 
+  ggtitle("Temperature Counts per Lake") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Lake", y = "Count (#)") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# create second barplot of temperature with different colors for lakename  
+ggplot(data = NTL.data, aes(x = temperature_C, color=lakename)) + geom_bar() + 
+  ggtitle("Counts of Temp, Separated by Lake") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Temperature (C)", y = "Count (#)")
+  
 # 2
   
 # histogram of temp
-ggplot(NTL.lakename.temp.complete) +
-  geom_histogram(aes(x = temperature_C))
+ggplot(NTL.data) + geom_histogram(aes(x = temperature_C)) +
+  ggtitle("Counts of Temp, All Lakes Combined") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Temperature (C)", y = "Count (#)")
 
 # 3
 
 # create histogram with 50 bins
-ggplot(NTL.lakename.temp.complete) +
-  geom_histogram(aes(x = temperature_C), bins=50)
+ggplot(NTL.data) +
+  geom_histogram(aes(x = temperature_C), bins=50)+
+  ggtitle("Counts of Temp, All Lakes Combined (50 bins)") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Temperature (C)", y = "Count (#)")
 
 # 4
 
 # frequency polygon of temp
-ggplot(NTL.lakename.temp.complete) +
+ggplot(NTL.data) +
   geom_freqpoly(aes(x = temperature_C, color = lakename), bins = 50) +
   scale_x_continuous(limits = c(0, 30)) +
-  theme(legend.position = "right")
+  theme(legend.position = "right") +
+  ggtitle("Frequency Polygon of Temps, Separated by Lake") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Temperature (C)", y = "Count (#)")
 
 # 5
 
 # boxplot of temp per lake
-ggplot(NTL.lakename.temp.complete) +
-  geom_boxplot(aes(x = lakename, y = temperature_C, group = cut_width(lakename, 1)))
+ggplot(NTL.data) +
+  geom_boxplot(aes(x = lakename, y = temperature_C, group = cut_width(lakename, 1))) +
+ggtitle("Temperature Measurements by Lake") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Lake", y = "Temperature (C)") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 # 6
 
-# create dataframe with only lakename, temp, and depth
-NTL.lakename.temp.depth <- NTL.data[,c("lakename", "temperature_C", "depth")]
-
-# remove NAs
-NTL.lakename.temp.depth.complete <- na.omit(NTL.lakename.temp.depth)
-
 # boxplot of temp based on depth, depth divided into 0.25m increments
-ggplot(NTL.lakename.temp.depth.complete) +
-  geom_boxplot(aes(x = depth, y = temperature_C, group = cut_width(depth, 0.25)))
-#SKO: how to tell the units of this dataset? couldn't find in readme or website
+ggplot(NTL.data) +
+  geom_boxplot(aes(x = depth, y = temperature_C, group = cut_width(depth, 0.25))) +
+  ggtitle("Temperature Measurements by Depth") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Depth (m)", y = "Temperature (C)")
 
 # 7 
 
 # scatterplot temp based on depth
-ggplot(NTL.lakename.temp.depth.complete) +
-  geom_point(aes(x = depth, y = temperature_C))
+ggplot(NTL.data) +
+  geom_point(aes(x = depth, y = temperature_C)) +
+  ggtitle("Temperature Measurements by Depth") + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  labs(x = "Depth (m)", y = "Temperature (C)")
 
 ```
 ## 5) Form questions for further data analysis
@@ -184,8 +205,6 @@ ggplot(NTL.lakename.temp.depth.complete) +
 What did you find out about your data from the basic summaries and graphs you made? Describe in 4-6 sentences.
 
 > ANSWER: The bar plot of temperature readings showed that Paul Lake and Peter Lake have by far the most temperature measurements, followed by Tuesday Lake, West Long Lake, and East Long Lake. Temperature measurements compiled from all the lakes show a range of 3-28 C. Most of the temperature measurements are around 5 C, with a small cluster of measurements around 23 C. At shallower depths (~0-7m), the temperature measurements have a much larger distribution as compared to those deeper. Even so, the temperature appears to decrease with increasing depth below the surface.
-
-> SKO: need to confirm that depths are in meters
 
 What are 3 further questions you might ask as you move forward with analysis of this dataset?
 
