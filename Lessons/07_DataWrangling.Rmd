@@ -30,7 +30,7 @@ NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
 head(NTL.phys.data)
 colnames(NTL.phys.data)
-summary(NTL.phys.data)
+summary(NTL.phys.data) # will give counts for categorical variables
 dim(NTL.phys.data)
 
 ```
@@ -59,30 +59,30 @@ vignette("dplyr")
 Filtering allows us to choose certain rows (observations) in our dataset.
 
 A few relevant commands: 
-`==`
-`!=`
+`==` # equals
+`!=` # is not
 `<`
 `<=`
 `>`
 `>=`
-`&`
-`|`
+`&` # and
+`|` # or
 
 ```{r}
-class(NTL.phys.data$lakeid)
-class(NTL.phys.data$depth)
+class(NTL.phys.data$lakeid) # categorical variable
+class(NTL.phys.data$depth) # continuous variable
 
 # matrix filtering
-NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
+NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,] # need the comma bc it specifies which column you choose
 
 # dplyr filtering
 NTL.phys.data.surface2 <- filter(NTL.phys.data, depth == 0)
 NTL.phys.data.surface3 <- filter(NTL.phys.data, depth < 0.25)
 
 # Did the methods arrive at the same result?
-head(NTL.phys.data.surface1)
+head(NTL.phys.data.surface1) # stored the row as whatever they were in the previous dataframe
 dim(NTL.phys.data.surface1)
-head(NTL.phys.data.surface2)
+head(NTL.phys.data.surface2) # stored the data with new rownames
 dim(NTL.phys.data.surface2)
 head(NTL.phys.data.surface3)
 dim(NTL.phys.data.surface3)
@@ -106,16 +106,17 @@ NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
 # Exercise: 
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
-class(NTL.phys.data$year4)
+class(NTL.phys.data$year4) #sko: bc this is an integer, it changes how you need to code
+NTL.phys.1999 <- filter(NTL.phys.data, year4 == 1999)
 
 # Exercise: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
-
+NTL.phys.Tues.1990.1999 <- filter(NTL.phys.data, year4 >= 1990 & year4 <= 1999 & lakename == "Tuesday Lake")
 
 ```
 Question: Why don't we filter using row numbers?
 
-> ANSWER: 
+> ANSWER: not reproducible
 
 ### Arrange
 
@@ -129,6 +130,10 @@ NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
 # Arrange NTL.phys.data by temperature, in descending order. 
 # Which dates, lakes, and depths have the highest temperatures?
 
+NTL.phys.data.all.temp.descending <- arrange(NTL.phys.data, desc(temperature_C))
+#east long lake has highest temp
+#dates are all in summer
+#shallow depths have highest temps
 
 ```
 ### Select
@@ -168,7 +173,9 @@ Notice that we did not place the dataset name inside the wrangling function but 
 ### Saving processed datasets
 
 ```{r}
-write.csv(NTL.phys.data.PeterPaul1, row.names = FALSE, file = "./Data/Processed/NTL-LTER_Lake_ChemistryPhysics_PeterPaul_Processed.csv")
+#write.csv(NTL.phys.data.PeterPaul1, row.names = FALSE, file = "./Data/Processed/NTL-LTER_Lake_ChemistryPhysics_PeterPaul_Processed.csv")
+
+#rownames = false means that the numbering in the first row should not be considered a row
 ```
 
 ## CLOSING DISCUSSION
