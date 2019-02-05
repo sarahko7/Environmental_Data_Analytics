@@ -50,6 +50,7 @@ PM25_NC2017 <- read.csv("./Data/Raw/EPAair_PM25_NC2017_raw.csv")
 PM25_NC2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
 
 #2
+###SKO TO CHECK!
 
 # explore O3_NC2017
 dim(O3_NC2017)
