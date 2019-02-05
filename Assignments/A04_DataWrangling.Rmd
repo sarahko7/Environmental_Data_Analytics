@@ -1,6 +1,6 @@
 ---
 title: "Assignment 4: Data Wrangling"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -35,7 +35,50 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 ```{r}
 #1
 
+# check the working directory
+getwd()
+
+# Load necessary package 'tidyverse'
+library(tidyverse)
+
+# upload 4 raw data files associated w the EPA Air dataset
+# set wd to the filepath of Environmental_Data_Analytics to use relative filepath
+
+O3_NC2017 <- read.csv("./Data/Raw/EPAair_O3_NC2017_raw.csv")
+O3_NC2018 <- read.csv("./Data/Raw/EPAair_O3_NC2018_raw.csv")
+PM25_NC2017 <- read.csv("./Data/Raw/EPAair_PM25_NC2017_raw.csv")
+PM25_NC2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
+
 #2
+
+# explore O3_NC2017
+dim(O3_NC2017)
+class(O3_NC2017)
+head(O3_NC2017)
+tail(O3_NC2017)
+summary(O3_NC2017$DAILY_AQI_VALUE)
+
+# explore O3_NC2018
+dim(O3_NC2018)
+class(O3_NC2018)
+head(O3_NC2018)
+tail(O3_NC2018)
+summary(O3_NC2018$DAILY_AQI_VALUE)
+
+# explore PM25_NC2017
+dim(PM25_NC2017)
+class(PM25_NC2017)
+head(PM25_NC2017)
+tail(O3_NC2018)
+summary(PM25_NC2017$DAILY_AQI_VALUE)
+
+# explore PM25_NC2018
+dim(PM25_NC2018)
+class(PM25_NC2018)
+head(PM25_NC2018)
+tail(O3_NC2018)
+summary(PM25_NC2018$DAILY_AQI_VALUE)
+
 ```
 
 ## Wrangle individual datasets to create processed files.
@@ -47,7 +90,25 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 ```{r}
 #3
 
+# check class of column date
+class(O3_NC2017$Date)
+class(O3_NC2018$Date)
+class(PM25_NC2017$Date)
+class(PM25_NC2018$Date)
+
+# change the date columns from class factor to date
+O3_NC2017$Date <- as.Date(O3_NC2017$Date, format = "%m/%d/%y")
+O3_NC2018$Date <- as.Date(O3_NC2018$Date, format = "%m/%d/%y")
+PM25_NC2017$Date <- as.Date(PM25_NC2017$Date, format = "%m/%d/%y")
+PM25_NC2018$Date <- as.Date(PM25_NC2018$Date, format = "%m/%d/%y")
+
 #4
+
+# create processed datasets
+O3_NC2017_processed <- select(O3_NC2017, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+O3_NC2018_processed <- select(O3_NC2018, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+PM25_NC2017_processed <- select(PM25_NC2017, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+PM25_NC2018_processed <- select(PM25_NC2018, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
 
 #5
 
@@ -82,7 +143,7 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 ## Generate summary tables
 12. Use the split-apply-combine strategy to generate two new data frames: 
 a. A summary table of mean AQI values for O3 and PM2.5 by month
-b. A summary table of the mean, minimum, and maximum concentrations of O3 and PM2.5 for each site
+b. A summary table of the mean, minimum, and maximum AQI values of O3 and PM2.5 for each site
 13. Display the data frames.
 
 ```{r}
