@@ -50,35 +50,42 @@ PM25_NC2017 <- read.csv("./Data/Raw/EPAair_PM25_NC2017_raw.csv")
 PM25_NC2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
 
 #2
-###SKO TO CHECK!
 
 # explore O3_NC2017
 dim(O3_NC2017)
+colnames(OC_NC2017)
 class(O3_NC2017)
 head(O3_NC2017)
 tail(O3_NC2017)
 summary(O3_NC2017$DAILY_AQI_VALUE)
+class(O3_NC2017$Date)
 
 # explore O3_NC2018
 dim(O3_NC2018)
+colnames(OC_NC2018)
 class(O3_NC2018)
 head(O3_NC2018)
 tail(O3_NC2018)
 summary(O3_NC2018$DAILY_AQI_VALUE)
+class(O3_NC2018$Date)
 
 # explore PM25_NC2017
 dim(PM25_NC2017)
+colnames(PM25_NC2017)
 class(PM25_NC2017)
 head(PM25_NC2017)
-tail(O3_NC2018)
+tail(PM25_NC2017)
 summary(PM25_NC2017$DAILY_AQI_VALUE)
+class(PM25_NC2017$Date)
 
 # explore PM25_NC2018
 dim(PM25_NC2018)
+colnames(PM25_NC2018)
 class(PM25_NC2018)
 head(PM25_NC2018)
 tail(O3_NC2018)
 summary(PM25_NC2018$DAILY_AQI_VALUE)
+class(PM25_NC2018$Date)
 
 ```
 
@@ -103,6 +110,12 @@ O3_NC2018$Date <- as.Date(O3_NC2018$Date, format = "%m/%d/%y")
 PM25_NC2017$Date <- as.Date(PM25_NC2017$Date, format = "%m/%d/%y")
 PM25_NC2018$Date <- as.Date(PM25_NC2018$Date, format = "%m/%d/%y")
 
+# confirm date columns are class date
+class(O3_NC2017$Date)
+class(O3_NC2018$Date)
+class(PM25_NC2017$Date)
+class(PM25_NC2018$Date)
+
 #4
 
 # create processed datasets
@@ -113,7 +126,24 @@ PM25_NC2018_processed <- select(PM25_NC2018, Date, DAILY_AQI_VALUE, Site.Name, A
 
 #5
 
+# For the PM2.5 datasets, fill all cells in AQS_PARAMETER_DESC with "PM2.5"
+
+PM25_NC2017_processed <- mutate(PM25_NC2017_processed, AQS_PARAMETER_DESC = "PM2.5")
+
+PM25_NC2018_processed <- mutate(PM25_NC2018_processed, AQS_PARAMETER_DESC = "PM2.5")
+
+class(PM25_NC2017_processed$AQS_PARAMETER_DESC)
+
+#note: the column AQS_PARAMETER_DESC has changed from class factor to character
+
 #6
+
+# save processed datasets in processed folder
+
+write.csv(O3_NC2017_processed, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2017_processed.csv")
+write.csv(O3_NC2018_processed, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2018_processed.csv")
+write.csv(PM25_NC2017_processed, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2017_processed.csv")
+write.csv(PM25_NC2018_processed, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2018_processed.csv")
 
 ```
 
@@ -130,9 +160,32 @@ PM25_NC2018_processed <- select(PM25_NC2018, Date, DAILY_AQI_VALUE, Site.Name, A
 11. Save your processed dataset with the following file name: "EPAair_O3_PM25_NC1718_Processed.csv"
 
 ```{r}
-#8
+#7
+
+# check for identical column names across the 4 datasets
+all(colnames(O3_NC2017_processed) == colnames(O3_NC2018_processed))
+all(colnames(PM25_NC2017_processed) == colnames(PM25_NC2018_processed))
+all(colnames(O3_NC2017_processed) == colnames(PM25_NC2017_processed))
+
+# combine datasets vertically
+EPAair_O3_PM25 <- rbind(O3_NC2017_processed, O3_NC2018_processed, PM25_NC2017_processed, PM25_NC2018_processed)
+
+#8 
+
+# wrangle based on conditions
+EPAair_O3_PM25_processed <-
+EPAair_O3_PM25 %>%
+filter(Site.Name == "Blackstone" | Site.Name == "Bryson City" | Site.Name == "Castle Hayne" | Site.Name == "Leggett" | Site.Name == "Triple Oak") %>%
+separate(Date, c("Y", "m", "d")) %>%
+rename(Year = "Y") %>%
+rename(Month = "m") %>%
+rename(Day = "d")
 
 #9
+
+EPAair_O3_PM25_spread <- spread(EPAair_O3_PM25, AQS_PARAMETER_DESC, DAILY_AQI_VALUE)
+
+# Spread your datasets such that AQI values for ozone and PM2.5 are in separate columns. Each location on a specific date should now occupy only one row.
 
 #10
 
