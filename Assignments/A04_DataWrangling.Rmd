@@ -1,9 +1,11 @@
 ---
-title: "Assignment 4: Data Wrangling"
+title: 'Assignment 4: Data Wrangling'
 author: "Sarah Ko"
-output: pdf_document
 geometry: margin=2.54cm
-editor_options: 
+output:
+  pdf_document: default
+  word_document: default
+editor_options:
   chunk_output_type: console
 ---
 
@@ -33,16 +35,18 @@ The completed exercise is due on Thursday, 7 February, 2019 before class begins.
 2. Generate a few lines of code to get to know your datasets (basic data summaries, etc.).
 
 ```{r}
+
 #1
 
-# check the working directory
+# get working directory
 getwd()
+
+# set wd to the filepath of Environmental_Data_Analytics to use relative filepath
 
 # Load necessary package 'tidyverse'
 library(tidyverse)
 
 # upload 4 raw data files associated w the EPA Air dataset
-# set wd to the filepath of Environmental_Data_Analytics to use relative filepath
 
 O3_NC2017 <- read.csv("./Data/Raw/EPAair_O3_NC2017_raw.csv")
 O3_NC2018 <- read.csv("./Data/Raw/EPAair_O3_NC2018_raw.csv")
@@ -53,7 +57,7 @@ PM25_NC2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
 
 # explore O3_NC2017
 dim(O3_NC2017)
-colnames(OC_NC2017)
+colnames(O3_NC2017)
 class(O3_NC2017)
 head(O3_NC2017)
 tail(O3_NC2017)
@@ -62,7 +66,7 @@ class(O3_NC2017$Date)
 
 # explore O3_NC2018
 dim(O3_NC2018)
-colnames(OC_NC2018)
+colnames(O3_NC2018)
 class(O3_NC2018)
 head(O3_NC2018)
 tail(O3_NC2018)
@@ -119,10 +123,14 @@ class(PM25_NC2018$Date)
 #4
 
 # create processed datasets
-O3_NC2017_processed <- select(O3_NC2017, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
-O3_NC2018_processed <- select(O3_NC2018, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
-PM25_NC2017_processed <- select(PM25_NC2017, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
-PM25_NC2018_processed <- select(PM25_NC2018, Date, DAILY_AQI_VALUE, Site.Name, AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+O3_NC2017_processed <- select(O3_NC2017, Date, DAILY_AQI_VALUE, Site.Name, 
+                              AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+O3_NC2018_processed <- select(O3_NC2018, Date, DAILY_AQI_VALUE, Site.Name, 
+                              AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+PM25_NC2017_processed <- select(PM25_NC2017, Date, DAILY_AQI_VALUE, Site.Name, 
+                                AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
+PM25_NC2018_processed <- select(PM25_NC2018, Date, DAILY_AQI_VALUE, Site.Name, 
+                                AQS_PARAMETER_DESC, COUNTY, SITE_LATITUDE, SITE_LONGITUDE)
 
 #5
 
@@ -140,10 +148,14 @@ class(PM25_NC2017_processed$AQS_PARAMETER_DESC)
 
 # save processed datasets in processed folder
 
-write.csv(O3_NC2017_processed, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2017_processed.csv")
-write.csv(O3_NC2018_processed, row.names = FALSE, file = "./Data/Processed/EPAair_O3_NC2018_processed.csv")
-write.csv(PM25_NC2017_processed, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2017_processed.csv")
-write.csv(PM25_NC2018_processed, row.names = FALSE, file = "./Data/Processed/EPAair_PM25_NC2018_processed.csv")
+write.csv(O3_NC2017_processed, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_O3_NC2017_processed.csv")
+write.csv(O3_NC2018_processed, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_O3_NC2018_processed.csv")
+write.csv(PM25_NC2017_processed, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_PM25_NC2017_processed.csv")
+write.csv(PM25_NC2018_processed, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_PM25_NC2018_processed.csv")
 
 ```
 
@@ -152,7 +164,7 @@ write.csv(PM25_NC2018_processed, row.names = FALSE, file = "./Data/Processed/EPA
 7. Combine the four datasets with `rbind`. Make sure your column names are identical prior to running this code. 
 8. Wrangle your new dataset with a pipe function (%>%) so that it fills the following conditions: 
 
-* Sites: Blackstone, Bryson City, Castle Hayne, Leggett, Triple Oak
+* Sites: Blackstone, Bryson City, Triple Oak
 * Add columns for "Month" and "Year" by parsing your "Date" column (hint: `separate` function or `lubridate` package)
 
 9. Spread your datasets such that AQI values for ozone and PM2.5 are in separate columns. Each location on a specific date should now occupy only one row.
@@ -168,14 +180,15 @@ all(colnames(PM25_NC2017_processed) == colnames(PM25_NC2018_processed))
 all(colnames(O3_NC2017_processed) == colnames(PM25_NC2017_processed))
 
 # combine datasets vertically
-EPAair_O3_PM25 <- rbind(O3_NC2017_processed, O3_NC2018_processed, PM25_NC2017_processed, PM25_NC2018_processed)
+EPAair_O3_PM25 <- rbind(O3_NC2017_processed, O3_NC2018_processed, 
+                        PM25_NC2017_processed, PM25_NC2018_processed)
 
-#8 
+#8
 
 # wrangle based on conditions
 EPAair_O3_PM25_processed <-
 EPAair_O3_PM25 %>%
-filter(Site.Name == "Blackstone" | Site.Name == "Bryson City" | Site.Name == "Castle Hayne" | Site.Name == "Leggett" | Site.Name == "Triple Oak") %>%
+filter(Site.Name == "Blackstone" | Site.Name == "Bryson City" | Site.Name == "Triple Oak") %>%
 separate(Date, c("Y", "m", "d")) %>%
 rename(Year = "Y") %>%
 rename(Month = "m") %>%
@@ -183,13 +196,19 @@ rename(Day = "d")
 
 #9
 
-EPAair_O3_PM25_spread <- spread(EPAair_O3_PM25, AQS_PARAMETER_DESC, DAILY_AQI_VALUE)
-
-# Spread your datasets such that AQI values for ozone and PM2.5 are in separate columns. Each location on a specific date should now occupy only one row.
+# spread dataset so ozone and PM2.5 are in separate columns
+EPAair_O3_PM25_spread <- spread(EPAair_O3_PM25_processed, AQS_PARAMETER_DESC, DAILY_AQI_VALUE)
 
 #10
 
+# check dimensions of spread dataset
+dim(EPAair_O3_PM25_spread)
+
 #11
+
+# save spread dataset
+write.csv(EPAair_O3_PM25_spread, row.names = FALSE, 
+          file = "./Data/Processed/EPAair_O3_PM25_NC1718_Processed.csv")
 
 ```
 
@@ -203,9 +222,33 @@ b. A summary table of the mean, minimum, and maximum AQI values of O3 and PM2.5 
 ```{r}
 #12a
 
+# create summary of mean O3 and PM2.5 by month
+mean_O3_PM25_bymonth <-
+  EPAair_O3_PM25_spread %>%
+  group_by(Month) %>%
+  summarise(meanO3 = mean(Ozone, na.rm=TRUE),
+            meanPM25 = mean(PM2.5, na.rm=TRUE))
+
 #12b
 
+# create a summary of mean/min/max O3 and PM2.5 by site
+stats_O3_PM25_bysite <-
+  EPAair_O3_PM25_spread %>%
+  group_by(Site.Name) %>%
+  summarise(meanO3 = mean(Ozone, na.rm=TRUE),
+            meanPM25 = mean(PM2.5, na.rm=TRUE),
+            minO3 = min(Ozone, na.rm=TRUE),
+            minPM25 = min(PM2.5, na.rm=TRUE),
+            maxO3 = max(Ozone, na.rm=TRUE),
+            maxPM25 = max(PM2.5, na.rm=TRUE))
+
 #13
+
+# display dataframes in console
+print(mean_O3_PM25_bymonth)
+print(stats_O3_PM25_bysite)
+
+# note that the column Month is now a character
 
 ```
 
