@@ -53,12 +53,16 @@ write.csv(NTL.nutrient.data.PeterPaul, row.names = FALSE, file = "./Data/Process
 
 # Remove columns that are not of interest for analysis
 NTL.phys.data.PeterPaul.skinny <- select(NTL.phys.data.PeterPaul, 
-                                         lakename, year4, sampledate:irradianceDeck)
+                                         lakename, daynum, year4, sampledate:irradianceDeck)
   
 NTL.nutrient.data.PeterPaul.skinny <- select(NTL.nutrient.data.PeterPaul, 
+<<<<<<< HEAD
                                              lakename, year4, sampledate, depth:po4)
 #if you don't want to include something with a select, put '-' before the column name
 
+=======
+                                             lakename, daynum, year4, sampledate, depth:po4)
+>>>>>>> 0093e291b66ba22b246b314b027e02be0645d372
 ```
 
 
@@ -109,7 +113,12 @@ Let's say we want to generate a new dataset that contains all possible physical 
 
 NTL.phys.nutrient.data.PeterPaul <- full_join(NTL.phys.data.PeterPaul.skinny, NTL.nutrient.data.PeterPaul.skinny)
 
+<<<<<<< HEAD
 #write.csv(NTL.phys.nutrient.data.PeterPaul, row.names = FALSE, file = "./Data/Processed/NTL-LTER_Lake")
+=======
+write.csv(NTL.phys.nutrient.data.PeterPaul, row.names = FALSE, 
+          file ="./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
+>>>>>>> 0093e291b66ba22b246b314b027e02be0645d372
 
 ```
 
@@ -150,10 +159,15 @@ NTL.PeterPaul.summaries <-
             meanTP = mean(tp_ug), 
             sdTP = sd(tp_ug))
 
+<<<<<<< HEAD
 # the stats are done by how you defined your groups
 
 #save file
 write.csv(NTL.PeterPaul.summaries, row.names=FALSE, file="./Data/Processed/NTL-LTER_Lake_Summaries_PeterPaul_Processed.csv")
+=======
+write.csv(NTL.PeterPaul.summaries, row.names = FALSE, 
+          file ="./Data/Processed/NTL-LTER_Lake_Summaries_PeterPaul_Processed.csv")
+>>>>>>> 0093e291b66ba22b246b314b027e02be0645d372
 
 ```
 
