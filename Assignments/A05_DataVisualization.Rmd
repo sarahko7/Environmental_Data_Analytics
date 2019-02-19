@@ -1,6 +1,6 @@
 ---
 title: "Assignment 5: Data Visualization"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -33,15 +33,83 @@ The completed exercise is due on Tuesday, 19 February, 2019 before class begins.
 2. Make sure R is reading dates as date format, not something else (hint: remember that dates were an issue for the USGS gauge data).
 
 ```{r}
+#load packages
+library(tidyverse)
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+library(tidyr)
+library(ggpubr)
+
 #1
 
+# get working directory
+getwd()
+
+# set wd to the filepath of Environmental_Data_Analytics to use relative filepath
+
+PeterPaul.Gathered <- read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+
+Stream.Raw <- read.csv("./Data/Raw/USGS_Site02085000_Flow_Raw.csv")
+
+Neonicotinoids.Raw <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
+
+# check that the dates fall within the reasonable timeframe
+
+head(PeterPaul.Gathered$sampledate)
+head(Stream.Raw$datetime)
+head(Neonicotinoids.Raw$Pub..Year)
+
+# fix the dates in Stream.Raw
+
+# change the class to date
+Stream.Raw$datetime <- as.Date(Stream.Raw$datetime, format = "%m/%d/%y")
+
+# format the dates as 6 character string: year/month/date
+Stream.Raw$datetime <- format(Stream.Raw$datetime, "%y%m%d")
+
+# create a function. 
+# paste0 amends the components together
+# checks if the date is after Dec 31, 2018 (the last possible day in the dataset). if its over, the date is actually in the 1900s, so start the string as 19, else set the string as 20. 
+create.early.dates <- (function(d) {
+       paste0(ifelse(d > 181231,"19","20"),d)
+       })
+
+# create the new dates, reformat
+Stream.Raw$datetime <- create.early.dates(Stream.Raw$datetime)
+Stream.Raw$datetime <- as.Date(Stream.Raw$datetime, format = "%Y%m%d") 
+
 #2
+
+# check the class of the date columns
+
+class(PeterPaul.Gathered$sampledate)
+class(Stream.Raw$datetime)
+class(Neonicotinoids.Raw$Pub..Year)
+
+# change class date. must define original format of data
+PeterPaul.Gathered$sampledate <- as.Date(PeterPaul.Gathered$sampledate, format = "%Y-%m-%d")
+
+# the Neonicotinoid column Pub..Year is already an integer, and does not have a month/day associated with it
+
+# confirm class of the date columns
+
+class(PeterPaul.Gathered$sampledate)
+class(Stream.Raw$datetime)
+
 ```
 ## Define your theme
 3. Build a theme and set it as your default theme.
 
 ```{r}
 #3
+
+SKotheme <- theme_gray(base_size = 15) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right", 
+        plot.title = element_text(hjust = 0.5))
+
+theme_set(SKotheme)
 
 ```
 
@@ -55,6 +123,25 @@ Hint: a good way to build graphs is to make them ugly first and then create more
 ```{r}
 #4
 
+# Spread nutrient data into separate columns
+PeterPaul.spread <- spread(PeterPaul.Gathered, nutrient, concentration)
+
+# Remove row if there is an NA in either the po4 or tp_ug column
+PeterPaul.spread.PlotP <- 
+  PeterPaul.spread %>% 
+  drop_na(po4, tp_ug)
+
+tP_vs_PO4_plot <- ggplot(PeterPaul.spread.PlotP, aes(x = po4, y = tp_ug)) +
+  geom_point(aes(shape = lakename, color = lakename)) +
+  scale_shape_manual(values=c(2, 0)) + # define shapes for lake names
+  geom_smooth(method=lm, colour="black") + # add line of best fit
+  xlim(0, 50) + # zoom into concentration of points
+  ggtitle("Total Phosphorous vs. Phosphate Concentration") + # add main title
+  xlab("Phosphate (\U003BCg/L)") + # format labels with UOM
+  ylab("Total Phosphorous (\U003BCg/L)") + 
+  scale_colour_manual(values = c("Peter Lake" = "Orange", "Paul Lake" = "Blue"))
+print(tP_vs_PO4_plot)
+
 ```
 
 
@@ -62,6 +149,27 @@ Hint: a good way to build graphs is to make them ugly first and then create more
 
 ```{r}
 #5
+
+#create facet titles
+nutrient_names <- c(
+                    `nh34` = "nh34 (\U003BCg/L)",
+                    `no23` = "no23 (\U003BCg/L)",
+                    `po4` = "po4 (\U003BCg/L)",
+                    `tn_ug` = "Total N (\U003BCg/L)", 
+                    `tp_ug` = "Total P (\U003BCg/L)"
+                    )
+
+Peter_nutrients_bydate <- ggplot(PeterPaul.Gathered, aes(x = sampledate, y = concentration, group = nutrient, color = depth)) +
+  geom_point() + 
+  ggtitle("Peter Lake Nutrients By Date") + # add main title
+  facet_wrap(vars(nutrient), nrow = 5) +
+  xlab(NULL) + # remove x label
+  ylab("Concentration (\U003BCg/L)") + 
+  geom_blank(data=PeterPaul.Gathered, aes(sampledate, concentration)) +
+  facet_grid(nutrient ~ ., scales="free", labeller = as_labeller(nutrient_names)) + 
+  scale_color_gradient(low = "orange", high = "black") + 
+  scale_y_reverse() 
+print(Peter_nutrients_bydate)
 
 ```
 
@@ -71,15 +179,55 @@ Hint: a good way to build graphs is to make them ugly first and then create more
 ```{r}
 #6
 
+# remove NAs in Stream.Raw
+Stream.Raw_noNA <- Stream.Raw %>% drop_na(X165986_00060_00001)
+
+# find max value of max discharge (cubic feet per second)
+max(Stream.Raw_noNA$X165986_00060_00001)
+
+# plot graph with geom_line
+Discharge_bydate_line <- ggplot(Stream.Raw_noNA, aes(x = datetime, y = X165986_00060_00001)) +
+  geom_point() +
+  geom_line(color = "blue") +
+  xlab(NULL) +
+  ylab(expression(paste("Max Daily Discharge (", ft^3, "/", s,")", sep=""))) +
+  ggtitle("USGS Streamflow data for site 02085000")
+print(Discharge_bydate_line)
+
+# plot graph with geom_smooth
+Discharge_bydate_smooth <- ggplot(Stream.Raw_noNA, aes(x = datetime, y = X165986_00060_00001)) +
+  geom_point() +
+  geom_smooth(method = "auto", color = "orange") +
+  ylab(expression(paste("Max Daily Discharge (", ft^3, "/", s,")", sep="")))
+print(Discharge_bydate_smooth)
+
+# create combined figure
+plot_stream <- ggarrange(Discharge_bydate_line, Discharge_bydate_smooth,
+                         ncol = 1, nrow = 2)
+print(plot_stream)
+
 ```
 Question: How do these two types of lines affect your interpretation of the data?
 
-> Answer:
+> Answer: Interpreting the data with 'geom_line' makes the data appear to be highly variable because this line type connects each data point with the subsequent data point. Interpreting the data with geom_smooth makes the data seem relatively constant over time because this type creates a line based on the frequency of data points at each value. For this stream gauge, most of the data points were clustered around very low data points, the trend line created is mostly constant, and sits at a low daily discharge value. 
 
 7. [ECOTOX Neonicotinoids] Plot the concentration, divided by chemical name. Choose a geom that accurately portrays the distribution of data points.
 
 ```{r}
 #7 
+
+# filter to include only mg/L data
+Neonicotinoids_mgL <- 
+  Neonicotinoids.Raw %>%
+  filter(Conc..Units..Std. == "mg/L")
+
+Neonicotinoids_plot <-
+  ggplot(Neonicotinoids_mgL, aes(x = Chemical.Name, y = Conc..Mean..Std.)) +
+  geom_violin() + 
+  xlab("Chemical Name") + 
+  ylab("Concentration (mg/L)") + 
+  ggtitle("Concentration (mg/L) of 5 Neonicotinoids")
+print(Neonicotinoids_plot)
 
 ```
 
