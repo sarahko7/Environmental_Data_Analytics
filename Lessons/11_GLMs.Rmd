@@ -1,6 +1,6 @@
 ---
 title: "11: Generalized Linear Models"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko - Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -14,6 +14,9 @@ editor_options:
 3. Interpret and report the results of GLMs in publication-style formats
 
 ## SET UP YOUR DATA ANALYSIS SESSION
+
+##notes:
+in statistics: y = beta x + alpha + epsilon <- the error
 
 ```{r, message = FALSE, warning = FALSE}
 getwd()
@@ -69,6 +72,8 @@ The object of a one sample test is to test the null hypothesis that the mean of 
 
 Are Ozone levels below the threshold for "good" AQI index (0-50)?
 
+y = alpha1 + alpha2 + epsilon. no beta term
+
 ```{r}
 summary(EPAair$Ozone)
 
@@ -78,13 +83,19 @@ ggplot(EPAair, aes(x = Ozone)) +
   geom_histogram(stat = "count")
 qqnorm(EPAair$Ozone); qqline(EPAair$Ozone)
 
+# often strong right tails in enviro data
+
 O3.onesample <- t.test(EPAair$Ozone, mu = 50, alternative = "less")
 O3.onesample
+
+#low p value: able to reject the null hypothesis
+#t score: the further from 0, the lower your probability
+
 ```
 
 What information does the output give us? How might we report this information in a report?
 
-> ANWSER:
+> ANSWER: The mean of ozone in 2017-18 was significantly lower than 50. one-sample ttest: t = -41.9, df = 184, 95% conf interval, p<0.0001
 
 ### Two-sample t-test
 The two-sample *t* test is used to test the hypothesis that the mean of two samples is equivalent. Unlike the one-sample tests, a two-sample test requires a second assumption that the variance of the two groups is equivalent. Are Ozone levels different between Blackstone and Bryson City?
@@ -94,24 +105,32 @@ shapiro.test(EPAair$Ozone[EPAair$Site.Name == "Blackstone"])
 shapiro.test(EPAair$Ozone[EPAair$Site.Name == "Bryson City"])
 var.test(EPAair$Ozone ~ EPAair$Site.Name)
 
+# in this case, the 95% confidence interval does not overlap 1 so these are different
+
 ggplot(EPAair, aes(x = Ozone, color = Site.Name)) +
   geom_freqpoly(stat = "count")
 
 # Format as a t-test
 O3.twosample <- t.test(EPAair$Ozone ~ EPAair$Site.Name)
 O3.twosample
-O3.twosample$p.value
+O3.twosample$p.value # this lets you call up a specific piece of your output
+
+# reject the null bc the p value is small. the means are significantly different!
+# y = blackstone (38.48) + bryson (35.18) + error
 
 # Format as a GLM
 O3.twosample2 <- lm(EPAair$Ozone ~ EPAair$Site.Name)
 summary(O3.twosample2)
+
+# blackston is 38.48, for bryson city you add -3.299
+
 ```
 ### Non-parametric equivalent of t-test: Wilcoxon test
 
 When we wish to avoid the assumption of normality, we can apply *distribution-free*, or non-parametric, methods in the form of the Wilcoxon rank sum (Mann-Whitney) test. The Wilcoxon test replaces the data by their rank and calculates the sum of the ranks for each group. Notice that the output of the Wilcoxon test is more limited than its parametric equivalent.
 
 ```{r}
-O3.onesample.wilcox <- wilcox.test(EPAair$Ozone, mu = 50, alternative = "less")
+O3.onesample.wilcox <- wilcox.test(EPAair$Ozone, mu = 50, alternative = "less") # same as in ttest
 O3.onesample.wilcox
 O3.twosample.wilcox <- wilcox.test(EPAair$Ozone ~ EPAair$Site.Name)
 O3.twosample.wilcox
@@ -130,11 +149,17 @@ ggplot(EPAair, aes(x = PM2.5, color = Site.Name)) +
   geom_freqpoly(stat = "count")
 qqnorm(EPAair$PM2.5); qqline(EPAair$PM2.5)
 
+#var.test only works on a pair at a time. bartlett works with more than 1 group at a time
+# might not be normal, but does fulfill same variances
 bartlett.test(EPAair$PM2.5 ~ EPAair$Site.Name)
 
 # Format as a GLM
 PM2.5.anova <- lm(EPAair$PM2.5 ~ EPAair$Site.Name)
 summary(PM2.5.anova)
+# y = blackstone(36.7) + bryson city (-4.4266) + triple oak (-3.24)
+# this is saying that triple oak is 3.24 less than blackstone
+# the p values from this is saying that the intercept is significantly different from 0, bryson city is significantly different from blackstone, and triple oak is significantly different from blackstone
+# can't tell you anything about bryson city and triple oak
 
 # Format as an aov
 PM2.5.anova2 <- aov(EPAair$PM2.5 ~ EPAair$Site.Name)
@@ -142,6 +167,7 @@ summary(PM2.5.anova2)
 
 # Run a post-hoc test for pairwise differences
 TukeyHSD(PM2.5.anova2)
+# tripleoak and bryson city do not have significantly different means
 
 # Plot the results
 # How might you edit this graph to make it attractive?
@@ -149,10 +175,12 @@ TukeyHSD(PM2.5.anova2)
 PM2.5.anova.plot <- ggplot(EPAair, aes(x = Site.Name, y = PM2.5)) +
   geom_violin(draw_quantiles = 0.5)
 print(PM2.5.anova.plot)
+
+#might needs dev.off()??
 ```
 What information does the output give us? How might we report this information in a report?
 
-> ANSWER:
+> ANSWER: (ANOVA; F = 16.16, df = 1898, p < 0.0001) describe blackstone being higher than bryson city and triple oak. bryson and triple oak are not different
 
 ### Non-parametric equivalent of ANOVA: Kruskal-Wallis Test
 As with the Wilcoxon test, the Kruskal-Wallis test is the non-parametric counterpart to the one-way ANOVA. Here, the data from two or more independent samples are replaced with their ranks without regard to the grouping AND based on the between-group sum of squares calculations. 
@@ -175,9 +203,13 @@ PM2.5.kw
 ### Main effects
 A two-way ANOVA allows us to examine the effects of two categorical explanatory variables on a continuous response variable. Let's look at the NTL-LTER nutrient dataset for Peter and Paul lakes. What if we wanted to know if total nitrogen concentrations differed based on lake and depth? 
 
+y = alpha_a1 + alpha_a2 + alpha_b1 + alpha_b2 + epsilon
+
 ```{r}
 TNanova.main <- lm(PeterPaul.nutrients$tn_ug ~ PeterPaul.nutrients$lakename + PeterPaul.nutrients$depth_id)
 summary(TNanova.main)
+
+# TN = paullake_depth1 (309) + paullake_depth1 (105) + depth2 (97.28)
 
 TNanova.main2 <- aov(PeterPaul.nutrients$tn_ug ~ PeterPaul.nutrients$lakename + PeterPaul.nutrients$depth_id)
 summary(TNanova.main2)
@@ -200,6 +232,7 @@ The output gives test statistics for each explanatory variable as well as the in
 ```{r}
 TNanova.interaction <- aov(PeterPaul.nutrients$tn_ug ~ PeterPaul.nutrients$lakename * PeterPaul.nutrients$depth_id)
 summary(TNanova.interaction)
+# lake, depthid, and the interaction are all important predictors. there is an important correlation
 
 ```
 
