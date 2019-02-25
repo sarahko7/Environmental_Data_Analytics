@@ -1,6 +1,6 @@
 ---
 title: "11: Generalized Linear Models"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -47,6 +47,9 @@ Whether or not we care about the result of each of these tested hypotheses will 
 
 Important components of the linear regression are the correlation and the R-squared value. The **correlation** is a number between -1 and 1, describing the relationship between the variables. Correlations close to -1 represent strong negative correlations, correlations close to zero represent weak correlations, and correlations close to 1 represent strong positive correlations. The **R-squared value** is the correlation squared, becoming a number between 0 and 1. The R-squared value describes the percent of variance accounted for by the explanatory variables. 
 
+sko: if you have an R = 0, there is not a relationship between your variables
+R^2 is the amount of variance explained by the dataset
+
 ### Simple Linear Regression
 For the NTL-LTER dataset, can we predict irradiance (light level) from depth?
 ```{r}
@@ -55,12 +58,22 @@ irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul
 irradiance.regression <- lm(data = PeterPaul.chem.nutrients, irradianceWater ~ depth)
 summary(irradiance.regression)
 
+#sko: irradiance = 487 - 96*depth + epsilon
+# we have significant predictors bc p is low, but we are only explaining 0.3 (=R^2)
+# multiple R-squared = 
+# adjusted R-squared = you get penalized for adding more explanatory variables
+
 # Correlation
 cor.test(PeterPaul.chem.nutrients$irradianceWater, PeterPaul.chem.nutrients$depth)
+
+# correlation x iteself = R^2
+
 ```
 Question: How would you report the results of this test (overall findings and report of statistical output)?
 
-> ANSWER: 
+> ANSWER: Depth is a significant predictor bc p value is < 2e-16. irradiance is 487 at the surface and decreases by 96 with each unit of depth. it is negatively correlated. (linear regression; R2 = 0.31, p < 0.0001, df = 15449)
+
+sko: if you have multiple explanatory variables, you want to provide the overall p value. for linear regression, you want a R2 and p value.
 
 So, we see there is a significant negative correlation between irradiance and depth (lower light levels at greater depths), and that this model explains about 31 % of the total variance in irradiance. Let's visualize this relationship and the model itself. 
 
@@ -76,6 +89,7 @@ An exploratory option to visualize the model fit is to use the function `plot`. 
 
 ```{r, fig.height = 3, fig.width = 4}
 plot(irradiance.regression)
+
 ```
 
 The option best suited for communicating findings is to plot the explanatory and response variables as a scatterplot. 
@@ -84,7 +98,7 @@ The option best suited for communicating findings is to plot the explanatory and
 # Plot the regression
 irradiancebydepth <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
-  #ylim(0, 2000) +
+  ylim(0, 2000) + # the data point is still in the group, but the graph is just zoomed in
   geom_point() 
 print(irradiancebydepth) 
 ```
@@ -97,21 +111,28 @@ irradiance.regression2 <- lm(data = PeterPaul.chem.nutrients, log(irradianceWate
 summary(irradiance.regression2)
 plot(irradiance.regression2)
 
+# log(irradiance) = 6.2 - .74 (depth) + epsilon
+# explaining more than double of the variances (bc adjusted R squared doubled)
+
 # Add a line and standard error for the linear regression
 irradiancebydepth2 <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
-  geom_smooth(method = "lm") +
   scale_y_log10() +
-  geom_point() 
+  geom_point() +
+  geom_smooth(method = "lm") 
 print(irradiancebydepth2) 
 
 # SE can also be removed
 irradiancebydepth2 <- 
     ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
-    geom_point() +
+    geom_point(alpha = 0.2) +
     scale_y_log10() +
-    geom_smooth(method = 'lm', se = FALSE, color = "black")
+    geom_smooth(method = 'lm', se = FALSE, color = "magenta") + 
+    labs(x="Depth (m)", y="Water Irrandiance (UOM)")
 print(irradiancebydepth2)
+
+# could use scale_x_continuous(breaks = c(0, 2, 4, 6, 8, 10, 12))
+# can add the equation of the line
 
 # Make the graph attractive
 
@@ -132,6 +153,9 @@ It is possible, and often useful, to consider multiple continuous explanatory va
 TPregression <- lm(data = PeterPaul.chem.nutrients, tp_ug ~ depth + dissolvedOxygen)
 summary(TPregression)
 
+# TP = 6 + 1.5*depth(m) + 0.9*DO(mg/L)
+# p values are low so they are significant predictors. but only R2 = only 8% of the data is explained
+
 TPplot <- ggplot(PeterPaul.chem.nutrients, 
                  aes(x = dissolvedOxygen, y = tp_ug, color = depth)) +
   geom_point() +
@@ -147,10 +171,13 @@ library(corrplot)
 PeterPaulnutrients <- 
   PeterPaul.chem.nutrients %>%
   select(tn_ug:po4) %>%
-  na.omit()
+  na.omit() # cannot run corplots if you have na's
 PeterPaulCorr <- cor(PeterPaulnutrients)
 corrplot(PeterPaulCorr, method = "ellipse")
 corrplot.mixed(PeterPaulCorr, upper = "ellipse")
+
+#spurious correlations
+
 ```
 ### AIC to select variables
 
@@ -178,15 +205,22 @@ Let's say we wanted to predict total nitrogen concentrations by depth and by lak
 TNancova.main <- lm(data = PeterPaul.chem.nutrients, tn_ug ~ lakename + depth)
 summary(TNancova.main)
 
+#TN = 353*PaulLake + 135.361*PeterLake - 9.7*depth + e
+#peter lake will be 353 + 135 at depth 0
+
 # interaction effects
 TNancova.interaction <- lm(data = PeterPaul.chem.nutrients, tn_ug ~ lakename * depth)
 summary(TNancova.interaction)
+
+#TP = 325*Paul + 185*Peter + 19.87*depth + 20*Paul&Depth -48*Peter&Depth + e
 
 TNplot <- ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = tn_ug, color = lakename)) + 
   geom_point() + 
   geom_smooth(method = "lm", se = FALSE) +
   xlim(0, 10)
 print(TNplot)
+
+#different slopes by the different categorical variables
 
 # Make the graph attractive
 ```
