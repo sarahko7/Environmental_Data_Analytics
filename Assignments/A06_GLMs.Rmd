@@ -1,6 +1,6 @@
 ---
 title: "Assignment 6: Generalized Linear Models"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -34,8 +34,43 @@ The completed exercise is due on Tuesday, 26 February, 2019 before class begins.
 
 ```{r}
 #1
+#load packages
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(ggpubr)
+
+# get working directory
+getwd()
+
+# set wd to the filepath of Environmental_Data_Analytics to use relative filepath
+
+NTL.ChemPhys <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+
+Neonicotinoids.Raw <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Mortality_raw.csv")
+
+# check the class of the date columns
+
+class(NTL.ChemPhys$sampledate)
+class(Neonicotinoids.Raw$Pub..Year)
+
+# change class date. must define original format of data
+NTL.ChemPhys$sampledate <- as.Date(NTL.ChemPhys$sampledate, format = "%m/%d/%y")
+
+# the Neonicotinoid column Pub..Year is already an integer, and does not have a month/day associated with it
+
+# confirm class of the date column
+
+class(NTL.ChemPhys$sampledate)
 
 #2
+
+SKotheme <- theme_gray(base_size = 15) +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "right", 
+        plot.title = element_text(hjust = 0.5))
+
+theme_set(SKotheme)
 
 ```
 
@@ -51,15 +86,43 @@ Research question: Were studies on various neonicotinoid chemicals conducted in 
 ```{r}
 #3
 
+# check class of Chemical.Name
+class(Neonicotinoids.Raw$Chemical.Name)
+
+# count # of different factor levels
+length(levels(Neonicotinoids.Raw$Chemical.Name))
+
 #4
 
+year.analysis.neonico <- Neonicotinoids.Raw %>%
+  group_by(Chemical.Name) %>%
+  summarise(statistic = shapiro.test(Pub..Year)$statistic, 
+            p.value = shapiro.test(Pub..Year)$p.value)
+print(year.analysis.neonico)
+
+# the p values for each of the 9 chemicals is < 0.001, therefore the null hypotheses (H0 = data follows a normal distribution) can be rejected. This infers that the distribution of publication years for each chemical is significantly different from a normal distribution
+
+# plot
+year.plot.neonico <- ggplot(Neonicotinoids.Raw) +
+  geom_freqpoly(aes(x = Pub..Year, color = Chemical.Name)) + 
+  xlab("year") +
+  ylab("frequency (#)") +
+  ggtitle("frequency of years by chemical") + 
+  theme(legend.position = "right")
+print(year.plot.neonico)
+
 #5
+
+bartlett.test(Neonicotinoids.Raw$Pub..Year ~ Neonicotinoids.Raw$Chemical.Name)
+
+# Test results: K^2 = 139.59, df = 8, p < 0.001
+# Since p < 0.05, this is evidence that the variance in frequency of years is significantly different for the different chemicals.
 
 ```
 
 6. Based on your results, which test would you choose to run to answer your research question?
 
-> ANSWER: 
+> ANSWER: A one-way anova is appropriate because there is 1 categorical explanatory variable (chemical) with more than 2 categories (there are 9 chemicals), and a continous response (count of publications).
 
 7. Run this test below. 
 
@@ -67,14 +130,25 @@ Research question: Were studies on various neonicotinoid chemicals conducted in 
 ```{r}
 #7
 
+pub.year.anova <- lm(Neonicotinoids.Raw$Pub..Year ~ Neonicotinoids.Raw$Chemical.Name)
+summary(pub.year.anova)
+# see the summary table for individual results (t values, p values)
+
 #8
+
+pub.year.boxplot <- ggplot(Neonicotinoids.Raw) +
+  geom_boxplot(aes(x = Chemical.Name, y = Pub..Year)) +
+  xlab("Chemicals") +
+  ylab("Publication Years") + 
+  ggtitle("Publication Years of Neonicotinoid Chemicals") + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+print(pub.year.boxplot)
 
 ```
 
-
 9. How would you summarize the conclusion of your analysis? Include a sentence summarizing your findings and include the results of your test in parentheses at the end of the sentence. 
 
-> ANSWER: 
+> ANSWER: Studies on various neonicotinoid chemicals were conducted in different years - this is concluded by statistically different means of the publication years of the chemicals. (Using a linear model, residual standard error: 7.093 on 1274 degrees of freedom, adjusted R-squared: 0.1674, F-statistic: 33.21, p-value: < 2.2e-16)
 
 ## NTL-LTER test
 Research question: What is the best set of predictors for lake temperatures in July across the monitoring period at the North Temperate Lakes LTER? 
@@ -90,7 +164,24 @@ Research question: What is the best set of predictors for lake temperatures in J
 ```{r}
 #11
 
+# July is daynum 182-212
+
+NTL.ChemPhys.processed <- 
+  NTL.ChemPhys %>%
+  filter(daynum > 181 & daynum < 213) %>% # take only dates in July
+  select(lakename, year4, daynum, depth, temperature_C) %>% # choose these columns
+  na.omit() # remove any row with NA
+
 #12
+
+# run step AIC
+NTL.AIC <- lm(data = NTL.ChemPhys.processed, temperature_C ~ year4 + daynum + 
+              depth)
+step(NTL.AIC)
+
+# run multiple regression on recommended model
+NTL.model <- lm(data = NTL.ChemPhys.processed, temperature_C ~ year4 + daynum + depth)
+summary(NTL.model)
 
 ```
 
@@ -98,21 +189,37 @@ Research question: What is the best set of predictors for lake temperatures in J
 
 > ANSWER: 
 
+Temperature_C = -6.455560 + 0.010131*year4 + 0.041336*daynum -1.947264*depth
+
+The adjusted R-squared value shows that 0.7417 of the observed variance is explained by this model.
+
 14. Run an interaction effects ANCOVA to predict temperature based on depth and lakename from the same wrangled dataset.
 
 ```{r}
 #14
 
+NTL.ancova <- lm(data = NTL.ChemPhys.processed, temperature_C ~ depth * lakename)
+summary(NTL.ancova)
+
 ```
 
 15. Is there an interaction between depth and lakename? How much variance in the temperature observations does this explain?
 
-> ANSWER: 
+> ANSWER: The ancova model shows that there is an interaction between depth and lakename, as illustrated by the overall p-value < 2.2e-16. However, some of the p values corresponding to the interactions between depth and specific lakes are not < 0.05, which suggests that this interaction is not significant for all lakes. The adjusted R-squared value shows that 0.7857 of the observed temperature variance is explained by this model.
 
 16. Create a graph that depicts temperature by depth, with a separate color for each lake. Add a geom_smooth (method = "lm", se = FALSE) for each lake. Make your points 50 % transparent. Adjust your y axis limits to go from 0 to 35 degrees. Clean up your graph to make it pretty. 
 
 ```{r}
 #16
+
+temp_by_depth <- ggplot(NTL.ChemPhys.processed, aes(x = depth, y = temperature_C)) +
+  geom_point(aes(color = lakename), alpha=0.5, stroke=0) + 
+  geom_smooth(method=lm, se=FALSE, aes(color = lakename)) + # add line of best fit for each lake
+  ylim(0, 35) + # zoom into concentration of points
+  ggtitle("Temperature vs Depth, by Lake") + # add main title
+  xlab("Depth (m)") + # format labels with UOM
+  ylab("Temperature (C)")
+print(temp_by_depth)
 
 ```
 
