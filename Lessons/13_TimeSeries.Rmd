@@ -1,7 +1,7 @@
 
 ---
 title: "13: Time Series Analysis"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko class notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -48,12 +48,16 @@ theme_set(mytheme)
 The coefficients of a hierarchical model are divided into two categories: **fixed effects** and **random effects.** A **fixed effect** is a factor whose levels are experimentally determined or whose interest lies in the effects of each level (e.g., covariates, treatments, interactions). A **random effect** is a factor whose levels are sampled from a larger population, or whose interest lies in the variation among them rather than the specific effect of each level. In choosing whether you are dealing with a fixed or a random effect, consider the following questions: 
 
   + Do you have a particular interest in the studied factor level?
+  sko: fixed effect
 
   + Have you included all possible levels in the study?
+  sko: fixed effect
   
   + Do you have interest in the variance among levels?
+  sko: random effect
   
   + Do you have interest in generalizing to factor levels that you did not study?
+  sko: random effect
   
 One common variable in hierarchical models is **time.** Time can be a complicated explanatory variable, as it can act as either a fixed or a random effect depending on the study design and research question. Due to **temporal autocorrelation,** conditions measured at a single site will be highly influenced by the conditions preceding the sampling date. Therefore, two samples taken in relatively close temporal proximity may not necessarily be independent of one another. Treating time as a random effect will account for temporal trends in observations (e.g., diel or seasonal patterns) that may not be of interest for your study.
 
@@ -87,8 +91,9 @@ Next, we will determine the degree of temporal autocorrelation in our dataset. W
 ```{r}
 # Determine autocorrelation in residuals
 TempTest.auto <- lme(data = PeterPaul.summertemp,
-                     temperature_C ~ sampledate * lakename, 
-                     random = ~1|Week)
+                     temperature_C ~ sampledate * lakename, #if stopped here, fixed effects w interaction
+                     random = ~1|Week) #add random effect
+# result shows the variability in temp across a season. 14 weeks included from June-Aug
 TempTest.auto
 
 ACF(TempTest.auto)
@@ -111,15 +116,22 @@ TempTest.mixed <- lme(data = PeterPaul.summertemp,
                      method = "REML")
 summary(TempTest.mixed)
 
+# intercept of fixed effect: 20.466650 C = temp at Paul lake on the first day of summer
+# chose the first choice alphabetically
+# sample date: 0.000099 C = amt of increase over time. 0.0001*365*32 = 1.168 degrees increase over time
+# p value of sampledate:lakenamePeter Lake is high so likely no interaction
+
 # Compare the random effects model with the fixed effects model
 TempTest.fixed <- gls(data = PeterPaul.summertemp,
                       temperature_C ~ sampledate * lakename, 
-                      method = "REML")
+                      method = "REML") # no random effect, no autocorrelation structure
 summary(TempTest.fixed)
+# if you came to the same conclusion, why include mixed effects? bc you know there is variability, so take advantage of it to create your model!
 
 anova(TempTest.mixed, TempTest.fixed)
 # The lower the AIC, the better.
 # The p-value tells us whether those models have a significantly different fit
+# large increase in AIC when you used fixed as opposed to mixed
 
 # Post-hoc test
 # This will yield groupings of temperature by lake for the average date value
@@ -130,7 +142,14 @@ cld(TempTest.posthoc, alpha = 0.05, Letters = letters, adjust = "tukey")
 ggplot(PeterPaul.summertemp, aes(x = sampledate, y = temperature_C, color = lakename)) +
   geom_point() +
   scale_color_manual(values = c("#7fcdbb", "#253494")) +
-  geom_abline(intercept = 20.47, slope = 0.0001)
+  geom_abline(intercept = 20.47, slope = 0.0001) + 
+  xlab('Sample Date') + 
+  ylab('Temperature (C)') +
+  ggtitle("Temperature over Summer Months") + 
+  theme(legend.position="right")
+
+# can use geomtext to add equation? some way to reproducibly do it?
+
 ```
 
 Question: How would you interpret the collective results of your mixed effects model in the context of the study question?
