@@ -1,7 +1,7 @@
 
 ---
 title: "14: Time Series Analysis"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -88,6 +88,8 @@ Pettitt's test is also included in the `trend` package. This nonparametric test 
 ```{r}
 # Test for change point
 pettitt.test(Peter.nutrients.surface$tp_ug)
+#unlike a breakpoint analysis, this will only give you 1 change point (if there is one)
+# change point identified at time 35
 
 # Run separate Mann-Kendall for each change point
 mk.test(Peter.nutrients.surface$tp_ug[1:34])
@@ -95,9 +97,10 @@ mk.test(Peter.nutrients.surface$tp_ug[35:132])
 
 # Is there a second change point?
 pettitt.test(Peter.nutrients.surface$tp_ug[35:132])
+# position 79, so 35+79 = point 113
 
 # Run another Mann-Kendall for the second change point
-mk.test(Peter.nutrients.surface$tp_ug[35:113])
+mk.test(Peter.nutrients.surface$tp_ug[35:113]) #z=2.7 means positive relationship
 mk.test(Peter.nutrients.surface$tp_ug[114:132])
 
 # Run the same test for Paul Lake. 
@@ -107,8 +110,13 @@ pettitt.test(Paul.nutrients.surface$tp_ug)
 # Add vertical lines to the original graph to represent change points
 ggplot(PeterPaul.nutrients.surface, aes(x = sampledate, y = tp_ug, color = lakename)) + 
   geom_point() +
+  geom_vline(xintercept = as.Date("1993/05/20"), linetype=2, 
+                color = "#253494", size=1.5) + # pick a point any time between 5/19/1993 - 5/26/1993 
+  geom_vline(xintercept = as.Date("1998/01/01"), linetype=2, 
+                color = "#253494", size=1.5) +
   scale_color_manual(values = c("#7fcdbb", "#253494"))
 
+#may need to supply origin if you are working with a date (1/1/1970 is the beginning of time
 ```
 ### Seasonal Mann-Kendall
 
@@ -123,19 +131,24 @@ USGS.flow.data.trimmed <- USGS.flow.data %>%
 
 # Visualize the data
 ggplot(USGS.flow.data.trimmed, aes(x = datetime, y = discharge.mean)) +
-  geom_point(size = 0.5, alpha = 0.5)
+  geom_point(size = 0.5, alpha = 0.5) +
+  scale_y_log10()
 ```
 
 ### Interpolation
 Some situations may require us to predict values for data points that fall within the time frame of our analyses but were not sampled. For instance, the `smk.test` function needs to take a time series format rather than a data frame, which cannot have any NAs. In this case, we will want to make an estimate of the missing values based on what we know about the dataset using a method called **interpolation.** There are several options for interpolation: 
 
   + **Means interpolation:** Defines values between sampled values as the mean value within a dataset. Uses the R function `aggregate`.
+  sko: can't predict
   
   + **Piecewise constant interpolation:** Defines values between sampled values as the value of the nearest sampled value. Uses the R function `approx` with `method = "constant"`
+  sko: aka nearest neighbor. good for distinct steps between points
   
   + **Linear interpolation:** Defines values between sampled values based on the slope between sampled values. Uses the R function `approx` with `method = "linear"`
+  sko: connect the dots. if you are between the points, follow the line
   
   + **Spline interpolation:** Defines values between sampled values based on polynomial functions between sampled values and chooses the polynomials so that they fit smoothly together. Uses the R function `splinefun`.
+  sko: like linear but smooth
 
 Question: Under what circumstances would you consider each of these options for interpolation? 
 
@@ -150,19 +163,24 @@ USGS.flow.data.interpolated <- approx(USGS.flow.data.trimmed$datetime,
                                       method = "linear", n = 3630)
 
 # Turn the interpolated dataset into a proper dataframe
-USGS.flow.data.interpolated <- do.call(cbind.data.frame, USGS.flow.data.interpolated)
-names(USGS.flow.data.interpolated) <- c("Date", "Discharge")
+USGS.flow.data.interpolated <- do.call(cbind.data.frame, USGS.flow.data.interpolated) #no more nas
+names(USGS.flow.data.interpolated) <- c("Date", "Discharge") #create label names
 USGS.flow.data.interpolated$Date <- as.Date(USGS.flow.data.interpolated$Date, 
-                                            origin = "1970/01/01")
+                                            origin = "1970/01/01") #bring back to type 'date'
 
 # Create a time series object
 USGS.flow.data.timeseries <- ts(USGS.flow.data.interpolated$Discharge, 
-                                start = c(2009, 1) ,frequency = 12)
+                                start = c(2009, 1), frequency = 12)
+#cannot click to view this item, so be careful when making this code
 
 # Run a Seasonal Mann-Kendall test
 USGS.smktest <- smk.test(USGS.flow.data.timeseries)
 USGS.smktest
 summary(USGS.smktest)
+# the p values ask 'is there significance FOR THIS SEASON'
+
+#march through july does not have strong significance
+#winter has strong significance
 ```
 
 Interpreting results of the Seasonal Mann-Kendall Test: 
