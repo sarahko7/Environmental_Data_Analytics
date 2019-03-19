@@ -1,6 +1,6 @@
 ---
 title: "Assignment 8: Time Series Analysis"
-author: "Student Name"
+author: "Sarah Ko"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -32,12 +32,53 @@ The completed exercise is due on Tuesday, 19 March, 2019 before class begins.
 
 Question: Did you do this?
 
-> ANSWER: 
+> ANSWER: Yes I did! I chose my own dataset and have described my project goals in the Sakai forum.
 
 ## Set up your session 
 2. Set up your session. Upload the EPA air quality raw dataset for PM2.5 in 2018, and the processed NTL-LTER dataset for nutrients in Peter and Paul lakes. Build a ggplot theme and set it as your default theme. Make sure date variables are set to a date format.
 
 ```{r}
+
+# load packages
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(ggpubr)
+library(lubridate)
+library(nlme)
+library(multcompView)
+library(lme4)
+library(trend)
+
+# get working directory
+getwd()
+
+# set wd to filepath of Environmental_Data_Analytics to use relative filepath
+# load EPA air quality raw dataset for PM2.5 in 2018
+Air_PM25_2018 <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
+
+# load NTL-LTER for nutrients in Peter and Paul Lakes
+NTL_Nutrients_PeterPaul <-
+  read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv")
+
+# build ggplot theme, set as default theme
+SKotheme <- theme_gray(base_size = 15) +
+theme(axis.text = element_text(color = "black"),
+legend.position = "right",
+plot.title = element_text(hjust = 0.5))
+theme_set(SKotheme)
+
+# check date variables
+class(Air_PM25_2018$Date)
+class(NTL_Nutrients_PeterPaul$sampledate)
+
+# change date variables to date must define original format of data
+Air_PM25_2018$Date <- as.Date(Air_PM25_2018$Date, format = "%m/%d/%y")
+NTL_Nutrients_PeterPaul$sampledate <- as.Date(NTL_Nutrients_PeterPaul$sampledate, format = "%Y-%m-%d")
+
+# confirm date variables
+class(Air_PM25_2018$Date)
+class(NTL_Nutrients_PeterPaul$sampledate)
 
 ```
 
@@ -52,6 +93,20 @@ Research question: Do PM2.5 concentrations have a significant trend in 2018?
 
 ```{r}
 
+# 3) run repeated measures ANOVA
+PM25_repeat_measures <- lme(data = Air_PM25_2018,
+                     Daily.Mean.PM2.5.Concentration ~ Date, 
+                     random = ~1|Site.Name)
+PM25_repeat_measures
+
+# 3a) graph PM2.5 by date
+PM25_date <- ggplot(data = Air_PM25_2018, aes(x = Date, y = Daily.Mean.PM2.5.Concentration)) +   
+  geom_point(alpha=0.5, stroke=0) + 
+  ggtitle("PM 2.5 Concentration over Time") + # add main title
+  xlab("Date") +
+  ylab("Daily Mean PM 2.5 Concentration (\U003BCg/m^3)")
+print(PM25_date)
+
 ```
 
 3b. Insert the following line of code into your R chunk. This will eliminate duplicate measurements on single dates for each site.
@@ -64,23 +119,47 @@ PM2.5 = PM2.5[!duplicated(PM2.5$Date),]
 
 ```{r}
 
+# 3b) eliminate duplicate measurements on single dates for each site
+PM2.5 <- Air_PM25_2018
+
+PM2.5 = PM2.5[order(PM2.5[,'Date'],-PM2.5[,'Site.ID']),]
+PM2.5 = PM2.5[!duplicated(PM2.5$Date),]
+
+# 3c) determine temporal autocorrelation
+ACF(PM25_repeat_measures)
+# take the 2nd value (the innermost group level) to define the degree of autocorrelation = 0.473017989
+
+# 3d) run mixed effects model
+PM25_mixed_effects <- lme(data = PM2.5,
+                     Daily.Mean.PM2.5.Concentration ~ Date, 
+                     random = ~1|Site.Name, #specify autocorrelation structure of order 1
+                     method = "REML") #define method as restricted maximum likelihood
+summary(PM25_mixed_effects)
+
 ```
 
 Is there a significant increasing or decreasing trend in PM2.5 concentrations in 2018? 
 
-> ANSWER: 
+> ANSWER: There is a significant decreasing trend in PM2.5 concentrations in 2018. The model equation is: concentration of PM2.5 (ug/m3) = 90.46502 - 0.00473*date. The p values corresponding to the intercept and the date variable are significant, with p = 0.0093 and p = 0.0158 respectively.
 
 3e. Run a fixed effects model with Date as the only explanatory variable. Then test whether the mixed effects model is a better fit than the fixed effect model. 
 
 ```{r}
+
+# 3e) run fixed effect model with Date as the only explanatory variable
+PM25_date_only <- gls(data = PM2.5,
+                     Daily.Mean.PM2.5.Concentration ~ Date,
+                     method = "REML") # no random effect, no autocorrelation structure
+summary(PM25_date_only)
+
+anova(PM25_mixed_effects, PM25_date_only)
 
 ```
 
 
 Which model is better?
 
-> ANSWER: 
-
+> ANSWER: The mixed effects model has an AIC value of 1865.215. The fixed effect model with only date as the explanatory variable has a slightly lower AIC value of 1865.202, indicating it to be the better model. However, the p value is 0.1587, which indicates that the models do not have a significantly different fit. 
 
 ## Run a Mann-Kendall test
 
@@ -90,16 +169,79 @@ Research question: Is there a trend in total N surface concentrations in Peter a
 
 ```{r}
 
-```
+# Wrangle dataset
+NTL_PeterPaul_TotalN <- 
+  NTL_Nutrients_PeterPaul %>%
+  select(-daynum, -year4) %>%
+  filter(nutrient == "tn_ug") %>%
+  filter(depth == 0)
 
+# initial visualization of the data
+Total_N_plot <- ggplot(NTL_PeterPaul_TotalN, aes(x = sampledate, y = concentration, 
+                                                 color = lakename)) + 
+  geom_point() + 
+  scale_color_manual(values = c("#7fcdbb", "#253494")) + 
+  ggtitle("Total N in Peter and Paul Lakes") + # add main title
+  xlab("Date") +
+  ylab("Total N (\U003BCg/L)")
+print(Total_N_plot)
+
+Peter.N.surface <- filter(NTL_PeterPaul_TotalN, lakename == "Peter Lake")
+dim(Peter.N.surface) # length = 98
+Paul.N.surface <- filter(NTL_PeterPaul_TotalN, lakename == "Paul Lake")
+dim(Paul.N.surface) # length = 99
+
+# PETER LAKE
+# Run a Mann-Kendall test
+mk.test(Peter.N.surface$concentration)
+
+# Test Peter Lake for changepoints
+pettitt.test(Peter.N.surface$concentration) # change point at time = 36
+Peter.N.surface$sampledate[35] # 1993-05-26
+Peter.N.surface$sampledate[36] # 1993-06-02
+# change point at ~ 1993-05-29
+
+# Run separate Mann-Kendall for each change point
+mk.test(Peter.N.surface$concentration[1:35])
+mk.test(Peter.N.surface$concentration[36:98])
+
+# check for second change point
+pettitt.test(Peter.N.surface$concentration[36:98]) # change point at time = 36+21 = 57
+Peter.N.surface$sampledate[56] # 1994-06-22
+Peter.N.surface$sampledate[57] # 1994-06-29
+# change point at ~ 1994-06-25
+
+# PAUL LAKE
+# Run a Mann-Kendall test
+mk.test(Paul.N.surface$concentration)
+
+# Test Paul Lake for changepoints
+pettitt.test(Paul.N.surface$concentration) # possible change point at time = 16, 
+#but p value is not significant
+
+```
 
 What are the results of this test?
 
-> ANSWER: 
+> ANSWER: Peter Lake shows a significant change in total N surface concentrations over time. It is seen to have 2 change points: the first ~1993-05-29 (p < 0.01), and the second ~1994-06-25 (p < 0.01). Paul Lake does not show any significant change points. 
 
 5. Generate a graph that illustrates the TN concentrations over time, coloring by lake and adding vertical line(s) representing changepoint(s).
 
 ```{r}
+
+# graph with changepoints
+Total_N_plot_changepoints <- ggplot(NTL_PeterPaul_TotalN, aes(x = sampledate, 
+                                                              y = concentration, color = lakename)) + 
+  geom_point() + 
+  scale_color_manual(values = c("#7fcdbb", "#253494")) + 
+  ggtitle("Total N in Peter and Paul Lakes") + # add main title
+  xlab("Date") +
+  ylab("Total N (\U003BCg/L)") + 
+  geom_vline(xintercept = as.Date("1993-05-29"), linetype=2, 
+                color = "#253494", size=1.5) + 
+  geom_vline(xintercept = as.Date("1994-06-25"), linetype=2, 
+                color = "#253494", size=1.5)
+print(Total_N_plot_changepoints)
 
 ```
 
