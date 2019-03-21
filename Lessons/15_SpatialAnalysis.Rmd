@@ -1,6 +1,6 @@
 ---
 title: "Spatial Analysis in R, Part 1"
-author: "John Fay"
+author: "John Fay, SKo Notes"
 date: "March 19, 2019"
 output:
   html_document:
@@ -36,6 +36,8 @@ Spatial data are modeled in two formats: vector and raster. Today, we'll be conc
 ### Feature _geometries_
 With vector data, a spatial feature takes the form of a _point_, _line_, or a _polygon_, collectively referred to as its **geometry**. 
 
+sko: precipitation and elevation are not well represented as points, lines, polygons
+
 > _Question_: Think of some features you might see on a map. Would they best be represented as a point, line, or polygon? Can some features be represented by more than one type? Can you think of any features that you couldn't map with a point/line/polygon? 
 
 
@@ -65,7 +67,9 @@ EPAair_PM_avg <- EPAair_PM25_NC2018_raw %>%
 
 #Plot the data using longitude and latitude as X and Y
 ggplot(EPAair_PM_avg, aes(x=SITE_LONGITUDE, y=SITE_LATITUDE)) + 
-  geom_point(aes(color=meanPM), size=4) #+ coord_equal() 
+  geom_point(aes(color=meanPM), size=4) + coord_equal() 
+
+# latitude = 'flatitude'
 ```
 
 This is more of a proof of concept than a useful map. We can sort of visualize spatial patterns in the data, but without context of scale or location, it's somewhat difficult. We can greatly improve this map with the help of some mapping packages for R...
@@ -103,7 +107,7 @@ Much better, no? And interactive! But while MapView loosely follows a familiar g
 See http://rstudio.github.io/leaflet/ for more info
 ```{r Plot with leaflet}
 #Import libraries 
-#install.packages('leaflet')
+install.packages('leaflet')
 library(leaflet)
 
 #Create the map and add Tiles
