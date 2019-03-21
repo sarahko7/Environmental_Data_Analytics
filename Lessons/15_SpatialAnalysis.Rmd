@@ -54,7 +54,7 @@ When we combine geometries with attributes we get a **spatially enabled datafram
 ### Plotting coordinate data with _ggplot_
 ```{r Map the 2017 EPA Ozone Data}
 #Import the tidyverse libary 
-library(tidyverse, quietly = TRUE)
+library(tidyverse)
 
 #Read the data 2017 Ozone data
 EPAair_PM25_NC2018_raw <- read.csv("./Data/Raw/EPAair_PM25_NC2018_raw.csv")
@@ -107,7 +107,7 @@ Much better, no? And interactive! But while MapView loosely follows a familiar g
 See http://rstudio.github.io/leaflet/ for more info
 ```{r Plot with leaflet}
 #Import libraries 
-install.packages('leaflet')
+#install.packages('leaflet')
 library(leaflet)
 
 #Create the map and add Tiles
@@ -173,7 +173,7 @@ plot(EPAair_PM_avg_sf)
 #Plot everything -- with MapView
 mapview(EPAair_PM_avg_sf)
 
-#Plot a single variable in mapviwe
+#Plot a single variable in mapview
 mapview(EPAair_PM_avg_sf['meanPM'])
 
 #With geometries now available in a column, we can use ggplot with the geom_sf object
