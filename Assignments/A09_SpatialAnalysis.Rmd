@@ -52,6 +52,9 @@ Nebraska's state FIPS code is `31` (as North Carolina's was `37`).
 ```{r Read the county data into an sf dataframe}
 #Read in Counties shapefile into an sf dataframe, filtering for just Nebraska counties
 
+getwd()
+# wd should be set to Environmental_Data_Analytics
+
 NE_counties <- st_read('./Data/Spatial/cb_2017_us_county_20m.shp') %>% 
   filter(STATEFP == 31) #Filter for Nebraska counties
 
@@ -183,7 +186,8 @@ ggplot() +
   geom_sf(data = NE_counties, col='blue') + 
   geom_sf(data = county_gage_sf, aes(size=gage_ht), alpha=0.5, stroke=0) + 
   ggtitle('USGS/NWIS Gage Heights in NE') + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.position = "none")
 
 ```
 

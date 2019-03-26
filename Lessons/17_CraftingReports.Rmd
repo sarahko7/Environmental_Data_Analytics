@@ -1,7 +1,7 @@
 
 ---
 title: "17: Crafting Reports"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko Notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -30,15 +30,39 @@ A handy cheat sheet for R markdown can be found [here](https://www.rstudio.com/w
 ## WHY R MARKDOWN?
 
 <Fill in our discussion below with bullet points. Use italics and bold for emphasis>
+#sko: this does not get printed in the markdown document!
+
+#sko: put a space after your bullets. need to have a space before the bulleted list
+
+#whats the usefullness of markdown?
+- code, output, and test/notes together in one document
+- knit to useful formats (pdf, html, docx)
+- git friendly - version control! reproducible
+- updating capabilities
+- focus on output and conclusions, not code (or the other way around. flexible formatting!)
 
 ## TEXT EDITING CHALLENGE
 
 Create a table below that details the example datasets we have been using in class. The first column should contain the name of the dataset and the second column should include some relevant information about the dataset.
 
+Dataset | Details
+------------- | -------------
+EPAair_PM25_NC2017_raw | data on particulate matter as a metric of air quality
+ECOTOX_Neonicotinoids_Mortality_raw | data on neonicotonoid concentrations
+
+#sko notes: good for meta data
+
+#sko notes: 'alt' key lets you highlight a column of bullets and change them all at once
 
 ## R CHUNK EDITING CHALLENGE
 ### Installing packages
 Create an R chunk below that installs the package `knitr`. Instead of commenting out the code, customize the chunk options such that the code is not evaluated (i.e., not run). 
+
+```{r eval=FALSE}
+
+install.packages(knitr)
+
+```
 
 
 ### Setup
@@ -48,6 +72,27 @@ Load the NTL-LTER_Lake_Nutrients_Raw dataset, display the head of the dataset, a
 
 Customize the chunk options such that the code is run but is not displayed in the final document.
 
+```{r setup, echo=FALSE}
+
+getwd()
+library(tidyverse)
+library(knitr)
+
+# build ggplot theme, set as default theme
+SKotheme <- theme_gray(base_size = 15) +
+theme(axis.text = element_text(color = "black"),
+legend.position = "right",
+plot.title = element_text(hjust = 0.5))
+theme_set(SKotheme)
+
+Nutrients_Raw <- read.csv("./Data/Raw/NTL-LTER_Lake_Nutrients_Raw.csv")
+head(Nutrients_Raw)
+class(Nutrients_Raw$sampledate)
+Nutrients_Raw$sampledate <- as.Date(Nutrients_Raw$sampledate, format = "%m/%d/%y")
+class(Nutrients_Raw$sampledate)
+
+```
+
 
 ### Data Exploration, Wrangling, and Visualization
 Create an R chunk below to create a processed dataset do the following operations: 
@@ -55,8 +100,25 @@ Create an R chunk below to create a processed dataset do the following operation
 * Include all columns except lakeid, depth_id, and comments
 * Include only surface samples (depth = 0 m)
 
+```{r}
+
+Nutrients_processed <- Nutrients_Raw %>%
+  select(-lakeid, -depth_id, -comments) %>%
+  filter(depth == 0)
+
+```
+
 
 Create a second R chunk to create a summary dataset with the mean, minimum, maximum, and standard deviation of total nitrogen concentrations for each lake. Create a second summary dataset that is identical except that it evaluates total phosphorus. Customize the chunk options such that the code is run but not displayed in the final document. 
+
+
+```{r}
+
+#Total_N_summary <- Nutrients_processed %>%
+ # group_by(lakename) %>%
+
+
+```
 
 
 Create a third R chunk that uses the function `kable` in the knitr package to display two tables: one for the summary dataframe for total N and one for the summary dataframe of total P. Use the `caption = " "` code within that function to title your tables. Customize the chunk options such that the final table is displayed but not the code used to generate the table. 
