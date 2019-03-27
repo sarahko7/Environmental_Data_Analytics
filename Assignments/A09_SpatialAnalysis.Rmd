@@ -1,12 +1,16 @@
 ---
-title: "Assignment: Spatial Analysis in R"
+title: 'Assignment: Spatial Analysis in R'
 author: "Sarah Ko"
-output:
-  html_document:
-    toc: true
-    toc_depth: 2
-    theme: "cosmo"
 geometry: margin=2.54cm
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+  html_document:
+    theme: cosmo
+    toc: yes
+    toc_depth: 2
+  always_allow_html: yes
 editor_options:
   chunk_output_type: console
 ---
@@ -36,6 +40,7 @@ library(tidyverse)
 library(sf)
 library(leaflet)
 library(mapview)
+library(webshot)
 
 ```
 
@@ -276,7 +281,8 @@ ggplot() +
   geom_sf(data = gage_w_county_data, col='red', aes(size=gage_ht), alpha=0.5, stroke=0) +
   ggtitle('NE Gage and County Data') + 
   theme(plot.title = element_text(hjust = 0.5)) + 
-  theme(legend.position = "none")
+  theme(legend.position = "none") + 
+  ylab("") + xlab ("")
 
 ```
 
@@ -297,11 +303,7 @@ gage_county_grouped <- gage_w_county_data %>%
   filter(!is.na(NAME) & !is.na(gage_ht)) %>% # filter out NAs
   group_by(NAME) %>% 
   summarise(mean_height = mean(gage_ht)) %>% 
-  st_set_geometry(NULL)
-
-#Convert result to a simple dataframe
-st_drop_geometry(gage_county_grouped) # drop the geometry column, making the object into a df
-class(gage_county_grouped)
+  st_set_geometry(NULL) #Convert result to a simple dataframe
 
 #Join summary to County fc
 county_mean_gage_join <- NE_counties_sf_UTM %>%
