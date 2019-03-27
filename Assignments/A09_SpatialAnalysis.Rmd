@@ -264,9 +264,19 @@ attributes of the county in which it is located.
 ```{r Spatial Join}
 #Join features
 
+gage_w_county_data <- st_join(gage_height_sf_UTM, NE_counties_sf_UTM, left = TRUE)
+
 #Show column names
+names(gage_w_county_data)
 
 #Plot
+ggplot() + 
+  geom_sf(data = NE_counties_sf_UTM, col='blue') + 
+  geom_sf_label(data = gage_w_county_data, aes(label = NAME, size=2, col=NAME)) +
+  geom_sf(data = gage_w_county_data, col='red', aes(size=gage_ht), alpha=0.5, stroke=0) +
+  ggtitle('NE Gage and County Data') + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.position = "none")
 
 ```
 
@@ -283,11 +293,29 @@ it's mean gage height.
 ```{r}
 #Group and summarize
 
+gage_county_grouped <- gage_w_county_data %>%
+  filter(!is.na(NAME) & !is.na(gage_ht)) %>% # filter out NAs
+  group_by(NAME) %>% 
+  summarise(mean_height = mean(gage_ht)) %>% 
+  st_set_geometry(NULL)
+
 #Convert result to a simple dataframe
+st_drop_geometry(gage_county_grouped) # drop the geometry column, making the object into a df
+class(gage_county_grouped)
 
 #Join summary to County fc
+county_mean_gage_join <- NE_counties_sf_UTM %>%
+  left_join(gage_county_grouped, by = c("NAME" =  "NAME"))
 
 #Plot
+ggplot() + 
+  geom_sf(data = county_mean_gage_join, col='blue') + 
+  geom_sf_label(data = county_mean_gage_join, aes(label = mean_height)) +
+  ggtitle('Mean Gage Height by County') + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(legend.position = "none") + 
+  ylab("") + 
+  xlab("")
 
 ```
 
