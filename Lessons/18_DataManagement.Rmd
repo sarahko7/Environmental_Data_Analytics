@@ -1,7 +1,7 @@
 
 ---
 title: "18: Data(base) Management"
-author: "Environmental Data Analytics | Kateri Salk"
+author: "Environmental Data Analytics | Sarah Ko - notes"
 date: "Spring 2019"
 output: pdf_document
 geometry: margin=2.54cm
@@ -69,7 +69,7 @@ Adapted from the [DataOne data management primer](https://www.dataone.org/sites/
 
 Search one or more of these databases to find a dataset that interests you. What did you find? 
 
-> ANSWER: 
+> ANSWER: can also use data() for data you can always use in R
 
 ### R Packages
 * NHANES: National Health and Nutrition Examination Survey
@@ -117,7 +117,7 @@ riverdata <- data_frame(Name = Name[7:189],
                         Outflow = Outflow)
 
 # Remove unnecessary text from within cells
-riverdata$Name <- str_replace(riverdata$Name, "\\[.*\\]", "")
+riverdata$Name <- str_replace(riverdata$Name, "\\[.*\\]", "") # remove anything in square brackets, including the square brackets
 riverdata$Name <- str_replace(riverdata$Name, "\n", "")
 
 
