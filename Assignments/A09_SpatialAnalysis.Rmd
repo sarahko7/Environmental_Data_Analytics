@@ -3,13 +3,13 @@ title: 'Assignment: Spatial Analysis in R'
 author: "Sarah Ko"
 geometry: margin=2.54cm
 output:
-  pdf_document:
-    toc: yes
-    toc_depth: '2'
   html_document:
     theme: cosmo
     toc: yes
     toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
   always_allow_html: yes
 editor_options:
   chunk_output_type: console
@@ -94,6 +94,7 @@ names(NWIS_NE)
 
 ```
 > QUESTION: What columns in the dataset contain the x and y coordinate values, respectively? 
+
 > ANSWER: The column 'dec_long_va' contains the x coordinate values, and the column 'dec_lat_va' contains the y coordinate values. 
 
 ### 4. Convert the gage locations dataframe to an sf dataframe of points
@@ -218,6 +219,7 @@ ggplot() +
 
 ```
 > QUESTION: The shape of Nebraska should look a bit different than the one created in Step 5? Why?
+
 > ANSWER: The map in Step 5 was created with EPSG 4269 - nad83. The map in Step 8 was created with EPSG 32614 - wgs84/utm zone 14n. The different coordinate reference systems change the depiction of the shape of the earth, which causes the shape of the state to look slightly different. The map created with EPSG 32614 appears to sit on a more rounded plane (the latitude and longitude lines are slightly curved) as compared to the map created with EPSG 4269.
 
 ### 9. Select the gages falling within a given county
@@ -253,7 +255,6 @@ ggplot() +
   theme(plot.title = element_text(hjust = 0.5))
 
 ```
-
 
 ### 10. Tag each gage site with the name of the county in which it falls
 A spatial join (`st_join`) allows us to assign the attributes of an overlapping
