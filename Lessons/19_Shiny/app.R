@@ -47,10 +47,14 @@ ui <- navbarPage('probability distributions', id = 'nav', # specifies panels at 
                               sliderInput('pn',
                                           'sample size'),
                               sliderInput('lambda',
-                                          '$$\\lambda$$'),
+                                          withMathJax('$$\\lambda$$'),
+                                          min = 0, 
+                                          max = 10, 
+                                          value = 0, 
+                                          step = 0.1),
                               checkboxInput('phist', label = 'histogram', value = TRUE), 
                               checkboxInput('pdens', label = 'density', value = TRUE),
-                              colourInput('pcol', label = 'select a color')
+                              colourInput('pcol', label = 'select a color', value = '#FF6666')
                             ),
                             mainPanel(
                               tabsetPanel(position = 'below',

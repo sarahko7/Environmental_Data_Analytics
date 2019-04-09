@@ -72,7 +72,7 @@ server <- function(input, output) {
       })
        
     # Create a table that generates data for each point selected on the graph  
-       output$mytable <- renderTable({
+       output$mytable <- renderTable({ # sko: can use renderDataTable to fix the problem w dates (# days since 1970)
          brush_out <- brushedPoints(filtered_nutrient_data(), input$scatterplot_brush)
        })
        
